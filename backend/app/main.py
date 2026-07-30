@@ -1,4 +1,5 @@
 import asyncio
+import json
 from time import perf_counter
 from typing import Annotated
 
@@ -14,6 +15,7 @@ from .agents.recommendation_agent import RecommendationAgent
 from .agents.search_agent import SearchAgent
 from .agents.support_agent import SupportAgent
 from .agents.visual_search_agent import VisualSearchAgent
+from .agents.review_agent import ReviewAgent
 from .auth import current_user
 from .catalogue import search_products
 from .config import Settings, get_settings
@@ -22,7 +24,8 @@ from .models import (
     ConversationSummary, Order, OrderItem, PhaseStatus, ProductList, Recommendation,
     FeedbackRequest, FeedbackResponse, RecommendRequest, ReturnRequest, ReturnResponse, SearchRequest, SemanticSearchResponse,
     SupportRequest, SupportResponse, TrackOrderRequest, TrackOrderResponse, User,
-    VisualSearchRequest, VisualSearchResponse,
+    ConversationObservability, ConversationReview, ImprovementRequest, ImprovementResponse,
+    ObservabilityConversation, ObservabilityTurn, TraceSpan, VisualSearchRequest, VisualSearchResponse,
 )
 from .services.faqs import all_faqs
 from .services.dependencies import get_analytics_store, get_memory_store, get_order_store, get_retrieval_service
@@ -35,6 +38,7 @@ comparison_agent = ComparisonAgent()
 support_agent = SupportAgent()
 order_agent = OrderAgent(get_order_store())
 visual_search_agent = VisualSearchAgent()
+review_agent = ReviewAgent()
 app = FastAPI(title=settings.app_name, version="0.1.0")
 app.add_middleware(
     CORSMiddleware,
@@ -195,7 +199,13 @@ async def run_instrumented_chat(request: ChatRequest, app_settings: Settings, us
     await get_analytics_store().record(
         user_id, "chat.completed", response.intent, latency_ms, input_tokens, output_tokens,
         properties={"source": response.source, "grounded": not escalated, "escalated": escalated,
-                    "confidence": 0.0 if escalated else 1.0, "tool": response.intent},
+                    "confidence": 0.0 if escalated else 1.0, "tool": response.intent,
+                    "user_message": request.message, "assistant_message": response.answer,
+                    "spans": [
+                        {"name": f"tool.{response.intent}", "kind": "tool", "duration_ms": round(latency_ms * .35), "input_tokens": 0, "output_tokens": 0},
+                        {"name": f"llm.{response.source}", "kind": "llm", "duration_ms": round(latency_ms * .65), "input_tokens": input_tokens, "output_tokens": output_tokens},
+                    ]},
+        conversation_id=response.conversation_id,
     )
     return response
 
@@ -315,3 +325,72 @@ async def feedback(request: FeedbackRequest, user: Annotated[User, Depends(curre
         return await get_analytics_store().feedback(user.id, request)
     except httpx.HTTPError as exc:
         raise HTTPException(status_code=503, detail="Feedback database is temporarily unavailable") from exc
+
+
+async def _observability_detail(user_id: str, conversation_id: str) -> ConversationObservability | None:
+    detail = await asyncio.to_thread(get_memory_store().conversation, user_id, conversation_id)
+    if not detail:
+        return None
+    events = [event for event in await get_analytics_store().events(user_id, conversation_id) if event.get("event_name") == "chat.completed"]
+    user_messages = [message.content for message in detail.messages if message.role == "user"]
+    assistant_messages = [message.content for message in detail.messages if message.role == "assistant"]
+    turns = []
+    for index, user_message in enumerate(user_messages):
+        event = events[index] if index < len(events) else {}
+        properties = event.get("properties") or {}
+        turns.append(ObservabilityTurn(
+            number=index + 1, user_message=user_message,
+            assistant_message=assistant_messages[index] if index < len(assistant_messages) else "",
+            agent=event.get("agent_name") or "shopping", latency_ms=int(event.get("latency_ms") or 0),
+            input_tokens=int(event.get("input_tokens") or max(1, len(user_message) // 4)),
+            output_tokens=int(event.get("output_tokens") or (max(1, len(assistant_messages[index]) // 4) if index < len(assistant_messages) else 0)),
+            spans=[TraceSpan.model_validate(span) for span in properties.get("spans", [])],
+        ))
+    input_tokens = sum(turn.input_tokens for turn in turns); output_tokens = sum(turn.output_tokens for turn in turns)
+    return ConversationObservability(
+        conversation=ObservabilityConversation(
+            id=conversation_id, first_message=user_messages[0] if user_messages else detail.conversation.title,
+            turns=len(turns), input_tokens=input_tokens, output_tokens=output_tokens,
+            total_tokens=input_tokens + output_tokens, last_activity=detail.conversation.updated_at,
+        ), turns=turns,
+    )
+
+
+@app.get("/analytics/conversations", response_model=list[ObservabilityConversation])
+async def observability_conversations(user: Annotated[User, Depends(current_user)]) -> list[ObservabilityConversation]:
+    conversations = await asyncio.to_thread(get_memory_store().list_conversations, user.id)
+    results = []
+    for conversation in conversations[:100]:
+        detail = await _observability_detail(user.id, conversation.id)
+        if detail:
+            results.append(detail.conversation)
+    return results
+
+
+@app.get("/analytics/conversations/{conversation_id}", response_model=ConversationObservability)
+async def observability_conversation(conversation_id: str, user: Annotated[User, Depends(current_user)]) -> ConversationObservability:
+    result = await _observability_detail(user.id, conversation_id)
+    if not result:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    return result
+
+
+def _transcript(observability: ConversationObservability) -> str:
+    return "\n".join(f"User: {turn.user_message}\nEmma: {turn.assistant_message}" for turn in observability.turns)
+
+
+@app.post("/analytics/conversations/{conversation_id}/review", response_model=ConversationReview)
+async def review_conversation(conversation_id: str, user: Annotated[User, Depends(current_user)], app_settings: Annotated[Settings, Depends(get_settings)]) -> ConversationReview:
+    result = await _observability_detail(user.id, conversation_id)
+    if not result:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    trace = json.dumps([span.model_dump() for turn in result.turns for span in turn.spans])
+    return await review_agent.review(_transcript(result), trace, app_settings)
+
+
+@app.post("/analytics/conversations/{conversation_id}/improvements", response_model=ImprovementResponse)
+async def improve_conversation(conversation_id: str, request: ImprovementRequest, user: Annotated[User, Depends(current_user)], app_settings: Annotated[Settings, Depends(get_settings)]) -> ImprovementResponse:
+    result = await _observability_detail(user.id, conversation_id)
+    if not result:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    return await review_agent.improvements(_transcript(result), request.feedback, request.conversation_area, request.improvement_focus, app_settings)

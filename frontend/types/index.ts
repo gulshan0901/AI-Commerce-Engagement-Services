@@ -63,6 +63,51 @@ export type AnalyticsResponse = {
   recent_events: number;
 };
 
+export type ObservabilityConversation = {
+  id: string;
+  first_message: string;
+  turns: number;
+  input_tokens: number;
+  output_tokens: number;
+  total_tokens: number;
+  last_activity: string;
+};
+
+export type TraceSpan = {
+  name: string;
+  kind: "llm" | "tool";
+  duration_ms: number;
+  input_tokens: number;
+  output_tokens: number;
+};
+
+export type ObservabilityTurn = {
+  number: number;
+  user_message: string;
+  assistant_message: string;
+  agent: string;
+  latency_ms: number;
+  input_tokens: number;
+  output_tokens: number;
+  spans: TraceSpan[];
+};
+
+export type ConversationObservability = {
+  conversation: ObservabilityConversation;
+  turns: ObservabilityTurn[];
+};
+
+export type ConversationReview = {
+  score: number;
+  summary: string;
+  tool_issues: string[];
+  behavior_observations: string[];
+  efficiency_notes: string[];
+  source: "openai" | "fallback";
+};
+
+export type ImprovementResponse = { ideas: string[]; source: "openai" | "fallback" };
+
 export type FeedbackResponse = { id: string; rating: number; message: string };
 
 export type CategorySummary = { slug: string; image_url: string; product_count: number };

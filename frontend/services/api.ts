@@ -1,4 +1,4 @@
-import { AnalyticsResponse, CategorySummary, ChatResponse, CompareResponse, ConversationDetail, ConversationSummary, FeedbackResponse, Product, SupportResponse, VisualSearchResponse } from "@/types";
+import { AnalyticsResponse, CategorySummary, ChatResponse, CompareResponse, ConversationDetail, ConversationObservability, ConversationReview, ConversationSummary, FeedbackResponse, ImprovementResponse, ObservabilityConversation, Product, SupportResponse, VisualSearchResponse } from "@/types";
 import { Order, ReturnResponse, TrackOrderResponse } from "@/types/order";
 import type { CartLine } from "@/features/cart/CartProvider";
 import { createSupabaseClient } from "@/services/supabase";
@@ -108,6 +108,25 @@ export function submitFeedback(conversationId: string, rating: number, comment: 
 
 export function getAnalytics(token: string) {
   return request<AnalyticsResponse>("/analytics", undefined, token);
+}
+
+export function getObservabilityConversations(token: string) {
+  return request<ObservabilityConversation[]>("/analytics/conversations", undefined, token);
+}
+
+export function getConversationObservability(conversationId: string, token: string) {
+  return request<ConversationObservability>(`/analytics/conversations/${encodeURIComponent(conversationId)}`, undefined, token);
+}
+
+export function reviewConversation(conversationId: string, token: string) {
+  return request<ConversationReview>(`/analytics/conversations/${encodeURIComponent(conversationId)}/review`, { method: "POST" }, token);
+}
+
+export function getImprovementIdeas(conversationId: string, feedback: string, conversationArea: string, improvementFocus: string, token: string) {
+  return request<ImprovementResponse>(`/analytics/conversations/${encodeURIComponent(conversationId)}/improvements`, {
+    method: "POST",
+    body: JSON.stringify({ feedback, conversation_area: conversationArea, improvement_focus: improvementFocus }),
+  }, token);
 }
 
 export function visualSearch(imageDataUrl: string, filename: string, token: string) {

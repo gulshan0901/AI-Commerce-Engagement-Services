@@ -2,26 +2,48 @@
 
 import InsightsRoundedIcon from "@mui/icons-material/InsightsRounded";
 import { Alert, Box, CircularProgress, Container, Grid, LinearProgress, Paper, Stack, Table, TableBody, TableCell, TableHead, TableRow, Typography } from "@mui/material";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { CommerceLayout } from "@/components/CommerceLayout";
 import { useAuthSession } from "@/hooks/useAuthSession";
-import { getAnalytics } from "@/services/api";
-import type { AnalyticsResponse } from "@/types";
+import { getAnalytics, getObservabilityConversations } from "@/services/api";
+import type { AnalyticsResponse, ObservabilityConversation } from "@/types";
+
+const compact = new Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 });
 
 export default function AnalyticsPage() {
   const { session, loading: authLoading } = useAuthSession();
   const [data, setData] = useState<AnalyticsResponse>();
+  const [conversations, setConversations] = useState<ObservabilityConversation[]>([]);
   const [error, setError] = useState("");
   useEffect(() => {
-    if (session) getAnalytics(session.access_token).then(setData).catch((caught) => setError(caught instanceof Error ? caught.message : "Analytics unavailable"));
+    if (!session) return;
+    Promise.all([getAnalytics(session.access_token), getObservabilityConversations(session.access_token)])
+      .then(([analytics, items]) => { setData(analytics); setConversations(items); })
+      .catch((caught) => setError(caught instanceof Error ? caught.message : "Analytics unavailable"));
   }, [session]);
-  return <CommerceLayout><Container maxWidth="xl" sx={{ py: 7 }}><Stack direction="row" spacing={2} alignItems="center" mb={1}><InsightsRoundedIcon color="secondary" fontSize="large" /><Typography variant="h2">AI analytics</Typography></Stack><Typography color="text.secondary" mb={4}>User-scoped operational metrics calculated from real ACE events and customer feedback.</Typography>
-    {authLoading && <CircularProgress />}
-    {!authLoading && !session && <Alert severity="info">Sign in to view the analytics dashboard.</Alert>}
-    {error && <Alert severity="error">{error}</Alert>}
-    {data && <Stack spacing={3}><Grid container spacing={2}>{data.cards.map((card) => <Grid key={card.label} size={{ xs: 12, sm: 6, md: 3 }}><Paper sx={{ p: 2.5, height: "100%" }}><Typography color="text.secondary" variant="body2">{card.label}</Typography><Typography variant="h4" mt={1}>{card.label.includes("cost") ? "$" : ""}{card.value.toLocaleString()} <Typography component="span" color="text.secondary" variant="body2">{card.unit}</Typography></Typography></Paper></Grid>)}</Grid>
+  const turns = conversations.reduce((sum, item) => sum + item.turns, 0);
+  const tokens = conversations.reduce((sum, item) => sum + item.total_tokens, 0);
+
+  return <CommerceLayout><Container maxWidth="xl" sx={{ py: 6 }}><Stack direction="row" spacing={2} alignItems="center" mb={1}><InsightsRoundedIcon color="secondary" fontSize="large" /><Box><Typography variant="h2">Agent Observability</Typography><Typography color="text.secondary">Conversation review, execution traces, cost and quality signals.</Typography></Box></Stack>
+    {authLoading && <CircularProgress sx={{ mt: 4 }} />}
+    {!authLoading && !session && <Alert severity="info" sx={{ mt: 4 }}>Sign in to view the analytics dashboard.</Alert>}
+    {error && <Alert severity="error" sx={{ mt: 3 }}>{error}</Alert>}
+    {data && <Stack spacing={3} mt={4}>
+      <Grid container spacing={2}>{[
+        ["Conversations", conversations.length, ""], ["Turns", turns, ""], ["Tokens", tokens, ""],
+        ...data.cards.slice(0, 3).map((card) => [card.label, card.value, card.unit]),
+      ].map(([label, value, unit]) => <Grid key={String(label)} size={{ xs: 6, md: 2 }}><Paper sx={{ p: 2.5, height: "100%", background: "linear-gradient(145deg, rgba(124,92,255,.12), transparent)" }}><Typography color="text.secondary" variant="caption" textTransform="uppercase">{label}</Typography><Typography variant="h4" mt={1}>{compact.format(Number(value))}</Typography><Typography variant="caption" color="text.secondary">{unit}</Typography></Paper></Grid>)}</Grid>
+
+      <Paper sx={{ overflow: "hidden" }}><Box p={2.5}><Typography variant="h5">Conversations</Typography><Typography color="text.secondary" variant="body2">Select a conversation to inspect every AI and tool call.</Typography></Box>
+        <Box sx={{ overflowX: "auto" }}><Table><TableHead><TableRow><TableCell>Conversation</TableCell><TableCell>First message</TableCell><TableCell align="right">Turns</TableCell><TableCell align="right">Tokens</TableCell><TableCell>Last activity</TableCell></TableRow></TableHead><TableBody>
+          {conversations.map((item) => <TableRow key={item.id} hover sx={{ "& a": { color: "success.main", textDecoration: "none" } }}><TableCell><Link href={`/analytics/conversations/${item.id}`}>{item.id.slice(0, 8)}…</Link><Typography variant="caption" display="block" color="text.secondary">chat</Typography></TableCell><TableCell sx={{ maxWidth: 480 }}><Typography noWrap>{item.first_message}</Typography></TableCell><TableCell align="right">{item.turns}</TableCell><TableCell align="right"><b>{item.total_tokens.toLocaleString()}</b><Typography variant="caption" display="block" color="text.secondary">In {item.input_tokens.toLocaleString()} · Out {item.output_tokens.toLocaleString()}</Typography></TableCell><TableCell>{new Date(item.last_activity).toLocaleString()}</TableCell></TableRow>)}
+          {!conversations.length && <TableRow><TableCell colSpan={5}><Typography color="text.secondary">Chat with Emma to generate observable conversations.</Typography></TableCell></TableRow>}
+        </TableBody></Table></Box>
+      </Paper>
+
       <Grid container spacing={3}><Grid size={{ xs: 12, md: 8 }}><Paper sx={{ p: 2.5 }}><Typography variant="h5" mb={2}>Agent performance</Typography><Table><TableHead><TableRow><TableCell>Agent</TableCell><TableCell align="right">Requests</TableCell><TableCell align="right">Avg latency</TableCell><TableCell align="right">Satisfaction</TableCell></TableRow></TableHead><TableBody>{data.agent_performance.map((agent) => <TableRow key={agent.agent}><TableCell sx={{ textTransform: "capitalize" }}>{agent.agent.replace("_", " ")}</TableCell><TableCell align="right">{agent.requests}</TableCell><TableCell align="right">{agent.average_latency_ms} ms</TableCell><TableCell align="right">{agent.satisfaction ? `${agent.satisfaction}/5` : "—"}</TableCell></TableRow>)}</TableBody></Table></Paper></Grid>
-      <Grid size={{ xs: 12, md: 4 }}><Paper sx={{ p: 2.5 }}><Typography variant="h5" mb={2}>Tool usage</Typography><Stack spacing={2}>{Object.entries(data.tool_usage).length ? Object.entries(data.tool_usage).map(([tool, count]) => <Box key={tool}><Stack direction="row" justifyContent="space-between"><Typography sx={{ textTransform: "capitalize" }}>{tool.replace("_", " ")}</Typography><Typography>{count}</Typography></Stack><LinearProgress variant="determinate" value={Math.min(100, count / Math.max(1, data.recent_events) * 100)} /></Box>) : <Typography color="text.secondary">Use the assistant to generate operational events.</Typography>}</Stack></Paper></Grid></Grid>
+      <Grid size={{ xs: 12, md: 4 }}><Paper sx={{ p: 2.5 }}><Typography variant="h5" mb={2}>Tool usage</Typography><Stack spacing={2}>{Object.entries(data.tool_usage).length ? Object.entries(data.tool_usage).map(([tool, count]) => <Box key={tool}><Stack direction="row" justifyContent="space-between"><Typography sx={{ textTransform: "capitalize" }}>{tool.replace("_", " ")}</Typography><Typography>{count}</Typography></Stack><LinearProgress color="secondary" variant="determinate" value={Math.min(100, count / Math.max(1, data.recent_events) * 100)} /></Box>) : <Typography color="text.secondary">Use Emma to generate operational events.</Typography>}</Stack></Paper></Grid></Grid>
     </Stack>}
   </Container></CommerceLayout>;
 }

@@ -196,6 +196,32 @@ def test_phase4_feedback_and_user_scoped_analytics() -> None:
     assert dashboard.json()["tool_usage"]["shopping"] >= 1
 
 
+def test_agent_observability_conversation_trace_and_optimization() -> None:
+    chat = client.post("/chat", json={"message": "Find a gaming laptop under $1200"})
+    assert chat.status_code == 200
+    conversation_id = chat.json()["conversation_id"]
+
+    listing = client.get("/analytics/conversations")
+    assert listing.status_code == 200
+    assert any(item["id"] == conversation_id for item in listing.json())
+
+    detail = client.get(f"/analytics/conversations/{conversation_id}")
+    assert detail.status_code == 200
+    assert detail.json()["turns"][0]["spans"]
+    assert detail.json()["conversation"]["total_tokens"] > 0
+
+    review = client.post(f"/analytics/conversations/{conversation_id}/review")
+    assert review.status_code == 200
+    assert 1 <= review.json()["score"] <= 5
+
+    improvement = client.post(f"/analytics/conversations/{conversation_id}/improvements", json={
+        "feedback": "Ask a clarifying question before recommending products.",
+        "conversation_area": "All turns", "improvement_focus": "Accuracy",
+    })
+    assert improvement.status_code == 200
+    assert improvement.json()["ideas"]
+
+
 def test_feedback_rejects_conversation_not_owned_by_user() -> None:
     response = client.post("/feedback", json={"conversation_id": "missing", "rating": 4})
     assert response.status_code == 404

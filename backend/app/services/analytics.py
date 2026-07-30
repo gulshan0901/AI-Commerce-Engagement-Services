@@ -57,19 +57,24 @@ class LocalAnalyticsStore:
         with self.connection:
             self.connection.executescript("""
             create table if not exists local_analytics (id text primary key, user_id text, event_name text,
-              agent_name text, latency_ms integer, input_tokens integer, output_tokens integer,
+              conversation_id text, agent_name text, latency_ms integer, input_tokens integer, output_tokens integer,
               estimated_cost real, properties text, created_at text);
             create table if not exists local_feedback (id text primary key, user_id text, conversation_id text,
               message_id text, rating integer, comment text, created_at text);
             """)
+            columns = {row[1] for row in self.connection.execute("pragma table_info(local_analytics)")}
+            if "conversation_id" not in columns:
+                self.connection.execute("alter table local_analytics add column conversation_id text")
 
     async def record(self, user_id: str, event_name: str, agent_name: str, latency_ms: int = 0,
                      input_tokens: int = 0, output_tokens: int = 0, estimated_cost: float = 0,
-                     properties: dict | None = None) -> None:
+                     properties: dict | None = None, conversation_id: str | None = None) -> None:
         with self.lock, self.connection:
-            self.connection.execute("insert into local_analytics values (?,?,?,?,?,?,?,?,?,?)", (
-                str(uuid4()), user_id, event_name, agent_name, latency_ms, input_tokens, output_tokens,
-                estimated_cost, json.dumps(properties or {}), datetime.now(timezone.utc).isoformat()))
+            self.connection.execute("""insert into local_analytics
+              (id,user_id,event_name,conversation_id,agent_name,latency_ms,input_tokens,output_tokens,estimated_cost,properties,created_at)
+              values (?,?,?,?,?,?,?,?,?,?,?)""", (
+                str(uuid4()), user_id, event_name, conversation_id, agent_name, latency_ms, input_tokens,
+                output_tokens, estimated_cost, json.dumps(properties or {}), datetime.now(timezone.utc).isoformat()))
 
     async def feedback(self, user_id: str, request: FeedbackRequest) -> FeedbackResponse:
         feedback_id = str(uuid4())
@@ -90,6 +95,17 @@ class LocalAnalyticsStore:
             event["properties"] = json.loads(event["properties"])
         return _dashboard(events, feedback, order_count)
 
+    async def events(self, user_id: str, conversation_id: str | None = None) -> list[dict]:
+        query, values = "select * from local_analytics where user_id=?", [user_id]
+        if conversation_id:
+            query += " and conversation_id=?"; values.append(conversation_id)
+        query += " order by created_at asc limit 1000"
+        with self.lock:
+            rows = [dict(row) for row in self.connection.execute(query, values)]
+        for row in rows:
+            row["properties"] = json.loads(row["properties"])
+        return rows
+
 
 class SupabaseAnalyticsStore:
     def __init__(self, url: str, service_role_key: str) -> None:
@@ -100,8 +116,9 @@ class SupabaseAnalyticsStore:
 
     async def record(self, user_id: str, event_name: str, agent_name: str, latency_ms: int = 0,
                      input_tokens: int = 0, output_tokens: int = 0, estimated_cost: float = 0,
-                     properties: dict | None = None) -> None:
+                     properties: dict | None = None, conversation_id: str | None = None) -> None:
         response = await self.client.post("analytics", json={"user_id": user_id, "event_name": event_name,
+            "conversation_id": conversation_id,
             "agent_name": agent_name, "latency_ms": latency_ms, "input_tokens": input_tokens,
             "output_tokens": output_tokens, "estimated_cost": estimated_cost, "properties": properties or {}})
         response.raise_for_status()
@@ -119,3 +136,11 @@ class SupabaseAnalyticsStore:
             "feedback", params={**params, "select": "id,rating,created_at"})
         events_response.raise_for_status(); feedback_response.raise_for_status()
         return _dashboard(events_response.json(), feedback_response.json(), order_count)
+
+    async def events(self, user_id: str, conversation_id: str | None = None) -> list[dict]:
+        params = {"user_id": f"eq.{user_id}", "select": "*", "order": "created_at.asc", "limit": "1000"}
+        if conversation_id:
+            params["conversation_id"] = f"eq.{conversation_id}"
+        response = await self.client.get("analytics", params=params)
+        response.raise_for_status()
+        return response.json()

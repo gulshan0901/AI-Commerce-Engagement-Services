@@ -231,3 +231,57 @@ class VisualSearchResponse(BaseModel):
     cheaper_alternatives: list[Recommendation]
     matching_accessories: list[Recommendation]
     source: Literal["openai", "fallback"]
+
+
+class ObservabilityConversation(BaseModel):
+    id: str
+    first_message: str
+    turns: int
+    input_tokens: int
+    output_tokens: int
+    total_tokens: int
+    last_activity: datetime
+
+
+class TraceSpan(BaseModel):
+    name: str
+    kind: Literal["llm", "tool"]
+    duration_ms: int
+    input_tokens: int = 0
+    output_tokens: int = 0
+
+
+class ObservabilityTurn(BaseModel):
+    number: int
+    user_message: str
+    assistant_message: str
+    agent: str
+    latency_ms: int
+    input_tokens: int
+    output_tokens: int
+    spans: list[TraceSpan]
+
+
+class ConversationObservability(BaseModel):
+    conversation: ObservabilityConversation
+    turns: list[ObservabilityTurn]
+
+
+class ConversationReview(BaseModel):
+    score: int = Field(ge=1, le=5)
+    summary: str
+    tool_issues: list[str]
+    behavior_observations: list[str]
+    efficiency_notes: list[str]
+    source: Literal["openai", "fallback"]
+
+
+class ImprovementRequest(BaseModel):
+    feedback: str = Field(min_length=3, max_length=3000)
+    conversation_area: str = "All turns"
+    improvement_focus: str = "Overall experience"
+
+
+class ImprovementResponse(BaseModel):
+    ideas: list[str]
+    source: Literal["openai", "fallback"]
