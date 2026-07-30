@@ -17,7 +17,15 @@ export const theme = createTheme({
     button: { textTransform: "none", fontWeight: 700 },
   },
   components: {
+    MuiCssBaseline: { styleOverrides: {
+      html: { scrollBehavior: "smooth" },
+      body: { textRendering: "optimizeLegibility" },
+      "*:focus-visible": { outline: "3px solid #4de2c5", outlineOffset: "3px" },
+      ".sr-only": { position: "absolute", width: "1px", height: "1px", padding: 0, margin: "-1px", overflow: "hidden", clip: "rect(0, 0, 0, 0)", whiteSpace: "nowrap", border: 0 },
+      "@media (prefers-reduced-motion: reduce)": { html: { scrollBehavior: "auto" }, "*, *::before, *::after": { animationDuration: "0.01ms !important", animationIterationCount: "1 !important", transitionDuration: "0.01ms !important" } },
+    } },
     MuiCard: { styleOverrides: { root: { border: "1px solid rgba(255,255,255,.08)" } } },
+    MuiTypography: { defaultProps: { variantMapping: { h1: "h1", h2: "h1", h3: "h2", h4: "h2", h5: "h3", h6: "h3", subtitle1: "p", subtitle2: "p", body1: "p", body2: "p" } } },
     MuiButton: { defaultProps: { disableElevation: true } },
   },
 });

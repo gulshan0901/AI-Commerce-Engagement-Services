@@ -22,7 +22,8 @@ export function ProductListing({ initialQuery = "", category }: { initialQuery?:
   }, [category, initialQuery, query]);
 
   return <Stack spacing={3}>
-    <TextField value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search by product, brand, category, or use case" InputProps={{ startAdornment: <InputAdornment position="start"><SearchRoundedIcon /></InputAdornment> }} />
+    <TextField value={query} onChange={(event) => setQuery(event.target.value)} label="Search products" placeholder="Product, brand, category, or use case" inputProps={{ "aria-describedby": "catalogue-status" }} InputProps={{ startAdornment: <InputAdornment position="start"><SearchRoundedIcon /></InputAdornment> }} />
+    <Typography id="catalogue-status" className="sr-only" role="status" aria-live="polite">{loading ? "Loading products" : `${products.length} products found`}</Typography>
     {error && <Alert severity="error">{error}. Start the FastAPI backend on port 8000.</Alert>}
     {loading && products.length > 0 && <LinearProgress />}
     {loading && products.length === 0 ? <CircularProgress /> : <Grid container spacing={2}>
