@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     openai_model: str = "gpt-5.6-sol"
     embedding_model: str = "text-embedding-3-small"
     memory_database_path: str = ":memory:"
+    product_api_url: str = "https://dummyjson.com/products?limit=0"
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

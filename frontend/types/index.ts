@@ -64,3 +64,5 @@ export type AnalyticsResponse = {
 };
 
 export type FeedbackResponse = { id: string; rating: number; message: string };
+
+export type CategorySummary = { slug: string; image_url: string; product_count: number };

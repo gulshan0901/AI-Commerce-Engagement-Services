@@ -31,6 +31,7 @@ flowchart TD
 - Retrieved records are passed to the model as bounded context.
 - The model explains or ranks known records; it cannot create products.
 - A deterministic local retrieval path keeps development usable without cloud credentials.
+- The catalogue adapter maps DummyJSON products into the ACE domain model and retains bundled products as an offline fallback.
 
 ## Current agent set
 

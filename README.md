@@ -20,6 +20,7 @@ AI agents receive products and business records from repositories. They never in
 - Supabase passwordless email authentication (demo mode without credentials)
 - FastAPI API with Supabase JWT verification
 - Product listing, text search, category and price filters
+- DummyJSON-powered catalogue with 194 external products across all available categories, plus local fallback products
 - Natural-language shopping requests and explainable recommendations
 - OpenAI Responses API integration with a deterministic local fallback
 - Supabase pgvector semantic search with a deterministic local-vector fallback
@@ -89,6 +90,8 @@ The application works in demo mode without secrets. To enable production integra
 7. Add `SUPABASE_SERVICE_ROLE_KEY` to the backend only. With it and `OPENAI_API_KEY`, product embeddings are indexed into Supabase automatically on the first semantic request; otherwise local vectors and SQLite memory are used.
 
 `EMBEDDING_MODEL` defaults to `text-embedding-3-small`. Without backend Supabase and OpenAI credentials, search uses local deterministic vectors and requires no API calls. `MEMORY_DATABASE_PATH` defaults to `commerce_ai.db` in the example environment; use `:memory:` for ephemeral tests.
+
+`PRODUCT_API_URL` defaults to `https://dummyjson.com/products?limit=0`. Run `python -m database.seed_dummyjson_products` from `backend` after applying migrations to idempotently import the catalogue into Supabase. ACE reads database products first, then uses the remote API and bundled catalogue as fallbacks.
 
 Never expose `OPENAI_API_KEY` or the Supabase service-role key to the frontend.
 

@@ -1,21 +1,26 @@
 "use client";
 
 import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
+import AddShoppingCartRoundedIcon from "@mui/icons-material/AddShoppingCartRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import SendRoundedIcon from "@mui/icons-material/SendRounded";
 import SmartToyOutlinedIcon from "@mui/icons-material/SmartToyOutlined";
-import { Alert, Avatar, Badge, Box, Button, CircularProgress, Fab, IconButton, Paper, Stack, TextField, Typography } from "@mui/material";
+import { Alert, Avatar, Badge, Box, Button, Chip, CircularProgress, Fab, IconButton, Paper, Rating, Stack, TextField, Typography } from "@mui/material";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { sendChat } from "@/services/api";
+import { useCart } from "@/features/cart/CartProvider";
+import type { Recommendation } from "@/types";
 
-type WidgetMessage = { role: "user" | "assistant"; content: string };
+type WidgetMessage = { role: "user" | "assistant"; content: string; recommendations?: Recommendation[] };
 
 export function ChatWidget() {
   const pathname = usePathname();
   const { session, loading: authLoading } = useAuthSession();
+  const { add } = useCart();
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<WidgetMessage[]>([
@@ -36,9 +41,8 @@ export function ChatWidget() {
     try {
       const result = await sendChat(message, conversationId, session.access_token);
       setConversationId(result.conversation_id);
-      const products = result.recommendations.map(({ product }) => product.name).join(", ");
       setMessages((current) => [...current, {
-        role: "assistant", content: `${result.answer}${products ? `\n\nRecommended: ${products}` : ""}`,
+        role: "assistant", content: result.answer, recommendations: result.recommendations,
       }]);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "The assistant is unavailable");
@@ -51,7 +55,17 @@ export function ChatWidget() {
         <Avatar sx={{ bgcolor: "primary.main" }}><SmartToyOutlinedIcon /></Avatar><Box flexGrow={1}><Typography fontWeight={850}>ACE Assistant</Typography><Typography variant="caption" color="secondary.main">Shopping team online</Typography></Box><IconButton aria-label="Close assistant" onClick={() => setOpen(false)}><CloseRoundedIcon /></IconButton>
       </Stack>
       <Stack spacing={1.25} sx={{ p: 2, flexGrow: 1, overflowY: "auto" }}>
-        {messages.map((message, index) => <Paper key={`${message.role}-${index}`} variant="outlined" sx={{ p: 1.25, maxWidth: "88%", alignSelf: message.role === "user" ? "flex-end" : "flex-start", bgcolor: message.role === "user" ? "rgba(124,108,255,.18)" : "background.default", whiteSpace: "pre-line" }}><Typography variant="body2">{message.content}</Typography></Paper>)}
+        {messages.map((message, index) => <Stack key={`${message.role}-${index}`} spacing={1} sx={{ width: message.recommendations?.length ? "100%" : "auto", maxWidth: message.recommendations?.length ? "100%" : "88%", alignSelf: message.role === "user" ? "flex-end" : "flex-start" }}>
+          <Paper variant="outlined" sx={{ p: 1.25, alignSelf: message.role === "user" ? "flex-end" : "flex-start", bgcolor: message.role === "user" ? "rgba(124,108,255,.18)" : "background.default", whiteSpace: "pre-line" }}><Typography variant="body2">{message.content}</Typography></Paper>
+          {message.recommendations?.map(({ product, reasons }) => <Paper key={product.id} variant="outlined" sx={{ overflow: "hidden", bgcolor: "background.default" }}>
+            <Stack direction="row"><Box sx={{ width: 104, minHeight: 112, position: "relative", flexShrink: 0 }}><Image src={product.image_url} alt={product.name} fill sizes="104px" style={{ objectFit: "cover" }} /></Box>
+              <Stack spacing={0.5} sx={{ p: 1.25, minWidth: 0, flexGrow: 1 }}><Stack direction="row" justifyContent="space-between" gap={1}><Box minWidth={0}><Typography variant="caption" color="secondary.main">{product.brand}</Typography><Typography fontWeight={800} noWrap>{product.name}</Typography></Box><Typography fontWeight={850}>${product.price.toLocaleString()}</Typography></Stack>
+                <Stack direction="row" spacing={0.75} alignItems="center"><Rating value={product.rating} precision={0.1} size="small" readOnly /><Typography variant="caption">{product.rating}</Typography></Stack>
+                <Stack direction="row" gap={0.5} flexWrap="wrap">{reasons.slice(0, 2).map((reason) => <Chip key={reason} label={reason} size="small" sx={{ maxWidth: "100%" }} />)}</Stack>
+              </Stack></Stack>
+            <Stack direction="row" spacing={1} sx={{ p: 1 }}><Button component={Link} href={`/products/${product.id}`} size="small" variant="outlined" fullWidth>Details</Button><Button size="small" variant="contained" fullWidth disabled={!product.in_stock} startIcon={<AddShoppingCartRoundedIcon />} onClick={() => add(product)}>{product.in_stock ? "Add" : "Out of stock"}</Button></Stack>
+          </Paper>)}
+        </Stack>)}
         {loading && <Stack direction="row" spacing={1} alignItems="center"><CircularProgress size={16} /><Typography variant="caption" color="text.secondary">Agents are working…</Typography></Stack>}
         {error && <Alert severity="error">{error}</Alert>}
       </Stack>

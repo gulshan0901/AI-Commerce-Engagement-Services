@@ -9,6 +9,7 @@ os.environ["REQUIRE_AUTH"] = "false"
 os.environ["MEMORY_DATABASE_PATH"] = ":memory:"
 os.environ["SUPABASE_SERVICE_ROLE_KEY"] = ""
 os.environ["OPENAI_API_KEY"] = ""
+os.environ["PRODUCT_API_URL"] = ""
 
 from app.config import Settings
 from app.main import app

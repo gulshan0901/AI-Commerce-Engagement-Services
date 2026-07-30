@@ -1,35 +1,23 @@
 import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
 import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
+import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
+import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
+import ShoppingBagRoundedIcon from "@mui/icons-material/ShoppingBagRounded";
 import VerifiedRoundedIcon from "@mui/icons-material/VerifiedRounded";
 import { Box, Button, Chip, Container, Grid, Paper, Stack, Typography } from "@mui/material";
 import Link from "next/link";
 import { CommerceLayout } from "@/components/CommerceLayout";
 
 const benefits = [
-  ["Grounded recommendations", "Every AI suggestion maps to a real catalogue record."],
-  ["Explainable decisions", "See the price, rating, availability, and specifications behind each choice."],
-  ["Continuous journey", "Browse normally or bring the assistant into any shopping decision."],
+  { icon: <SearchRoundedIcon />, title: "Grounded discovery", copy: "Search a broad database catalogue using natural language and real product data." },
+  { icon: <VerifiedRoundedIcon />, title: "Explainable choices", copy: "Understand the price, rating, stock, and specifications behind every suggestion." },
+  { icon: <ShoppingBagRoundedIcon />, title: "Complete journey", copy: "Move smoothly from discovery to comparison, cart, checkout, tracking, and support." },
 ];
 
 export default function HomePage() {
-  return <CommerceLayout>
-    <Box sx={{ background: "radial-gradient(circle at 78% 8%, rgba(124,108,255,.3), transparent 34%)" }}>
-      <Container sx={{ py: { xs: 9, md: 15 } }}>
-        <Grid container spacing={6} alignItems="center">
-          <Grid size={{ xs: 12, md: 7 }}><Stack spacing={3}>
-            <Chip icon={<VerifiedRoundedIcon />} label="Enterprise commerce intelligence" color="secondary" sx={{ alignSelf: "flex-start" }} />
-            <Typography variant="h1" fontSize={{ xs: 50, md: 82 }} maxWidth={850}>Commerce that understands the customer.</Typography>
-            <Typography color="text.secondary" fontSize={{ xs: 18, md: 21 }} maxWidth={700}>ACE combines a complete shopping experience with grounded AI discovery, comparison, recommendations, and support.</Typography>
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-              <Button component={Link} href="/products" size="large" variant="contained" endIcon={<ArrowForwardRoundedIcon />}>Explore products</Button>
-              <Button component={Link} href="/assistant" size="large" variant="outlined" startIcon={<AutoAwesomeRoundedIcon />}>Ask ACE</Button>
-            </Stack>
-          </Stack></Grid>
-          <Grid size={{ xs: 12, md: 5 }}><Paper sx={{ p: 3, background: "linear-gradient(145deg, rgba(124,108,255,.18), rgba(77,226,197,.06))" }}><Typography color="secondary.main" fontWeight={800}>Try asking</Typography>{["Gaming laptop under $1,200", "Lightweight running shoes", "Compare the best options"].map((text) => <Paper key={text} variant="outlined" sx={{ p: 2, mt: 1.5 }}>{text}</Paper>)}</Paper></Grid>
-        </Grid>
-      </Container>
-    </Box>
-    <Container><Grid container spacing={2}>{benefits.map(([title, copy]) => <Grid key={title} size={{ xs: 12, md: 4 }}><Paper sx={{ p: 3, height: "100%" }}><Typography variant="h6" fontWeight={850}>{title}</Typography><Typography color="text.secondary" mt={1}>{copy}</Typography></Paper></Grid>)}</Grid></Container>
-  </CommerceLayout>;
+  return <CommerceLayout><Box sx={{ position: "relative", overflow: "hidden", background: "radial-gradient(circle at 85% 10%, rgba(124,108,255,.3), transparent 34%), radial-gradient(circle at 10% 70%, rgba(77,226,197,.1), transparent 30%)" }}>
+    <Container maxWidth="xl" sx={{ pt: { xs: 6, md: 9 }, pb: { xs: 5, md: 7 } }}><Grid container spacing={{ xs: 4, md: 7 }} alignItems="center"><Grid size={{ xs: 12, md: 7 }}><Stack spacing={2.5}><Chip icon={<VerifiedRoundedIcon />} label="AI-powered commerce, grounded in real products" color="secondary" sx={{ alignSelf: "flex-start" }} /><Typography variant="h1" fontSize={{ xs: 46, sm: 60, md: 76 }} lineHeight={1.02} maxWidth={820}>Find the right product.<Box component="span" color="secondary.main"> Understand why.</Box></Typography><Typography color="text.secondary" fontSize={{ xs: 17, md: 20 }} lineHeight={1.65} maxWidth={690}>ACE brings intelligent discovery, transparent comparisons, personalized recommendations, order help, and support into one seamless shopping experience.</Typography><Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}><Button component={Link} href="/products" size="large" variant="contained" endIcon={<ArrowForwardRoundedIcon />} sx={{ px: 3 }}>Explore products</Button><Button component={Link} href="/assistant" size="large" variant="outlined" startIcon={<AutoAwesomeRoundedIcon />} sx={{ px: 3 }}>Ask ACE</Button></Stack><Stack direction="row" spacing={{ xs: 2, sm: 4 }} pt={1}>{[["200+", "Products"], ["26", "Categories"], ["24/7", "AI assistance"]].map(([value, label]) => <Box key={label}><Typography variant="h5" fontWeight={950}>{value}</Typography><Typography variant="caption" color="text.secondary">{label}</Typography></Box>)}</Stack></Stack></Grid>
+      <Grid size={{ xs: 12, md: 5 }}><Paper sx={{ p: 2.5, background: "linear-gradient(145deg, rgba(124,108,255,.2), rgba(77,226,197,.06))", boxShadow: "0 30px 80px rgba(0,0,0,.28)" }}><Stack direction="row" spacing={1.5} alignItems="center" mb={2}><Box sx={{ width: 42, height: 42, display: "grid", placeItems: "center", borderRadius: 3, bgcolor: "primary.main" }}><AutoAwesomeRoundedIcon /></Box><Box><Typography fontWeight={900}>ACE Shopping Assistant</Typography><Typography variant="caption" color="secondary.main">Specialized agents ready</Typography></Box></Stack><Paper variant="outlined" sx={{ p: 1.75, ml: 5, bgcolor: "rgba(124,108,255,.15)" }}>I need a great laptop under $1,200.</Paper><Paper variant="outlined" sx={{ p: 2, mt: 1.5, mr: 3, bgcolor: "background.default" }}><Typography mb={1}>I found two strong matches based on your budget, rating, stock, and portability.</Typography>{["Real catalogue products", "Budget verified", "Reasons included"].map((text) => <Stack key={text} direction="row" spacing={1} alignItems="center" mt={0.75}><CheckCircleRoundedIcon color="secondary" sx={{ fontSize: 18 }} /><Typography variant="body2" color="text.secondary">{text}</Typography></Stack>)}</Paper></Paper></Grid></Grid></Container>
+    <Container maxWidth="xl" sx={{ pb: 3 }}><Grid container spacing={2}>{benefits.map((benefit) => <Grid key={benefit.title} size={{ xs: 12, md: 4 }}><Paper sx={{ p: 2.75, height: "100%", bgcolor: "rgba(18,21,34,.78)" }}><Box color="secondary.main">{benefit.icon}</Box><Typography variant="h6" fontWeight={900} mt={1}>{benefit.title}</Typography><Typography color="text.secondary" mt={0.75} lineHeight={1.6}>{benefit.copy}</Typography></Paper></Grid>)}</Grid></Container>
+  </Box></CommerceLayout>;
 }
-

@@ -1,16 +1,27 @@
-import { AnalyticsResponse, ChatResponse, CompareResponse, ConversationDetail, ConversationSummary, FeedbackResponse, Product, SupportResponse } from "@/types";
+import { AnalyticsResponse, CategorySummary, ChatResponse, CompareResponse, ConversationDetail, ConversationSummary, FeedbackResponse, Product, SupportResponse } from "@/types";
 import { Order, ReturnResponse, TrackOrderResponse } from "@/types/order";
 import type { CartLine } from "@/features/cart/CartProvider";
+import { createSupabaseClient } from "@/services/supabase";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 const catalogueCache = new Map<string, { expires: number; value: unknown }>();
 
-async function request<T>(path: string, init?: RequestInit, token?: string): Promise<T> {
+async function request<T>(path: string, init?: RequestInit, token?: string, retrySession = true): Promise<T> {
   const response = await fetch(`${API_URL}${path}`, {
     ...init,
     headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}), ...init?.headers },
   });
-  if (!response.ok) throw new Error((await response.json()).detail ?? "Request failed");
+  if (response.status === 401 && token && retrySession) {
+    const supabase = createSupabaseClient();
+    if (supabase) {
+      const { data, error } = await supabase.auth.refreshSession();
+      if (!error && data.session?.access_token) return request<T>(path, init, data.session.access_token, false);
+    }
+  }
+  if (!response.ok) {
+    const payload = await response.json().catch(() => ({}));
+    throw new Error(response.status === 401 ? "Your session expired. Please sign in again." : payload.detail ?? "Request failed");
+  }
   return response.json() as Promise<T>;
 }
 
@@ -33,7 +44,11 @@ export async function getProduct(productId: string) {
 }
 
 export function getCategories() {
-  return request<string[]>("/categories");
+  return request<string[]>("/categories", { cache: "no-store" });
+}
+
+export function getCategorySummaries() {
+  return request<CategorySummary[]>("/categories/summary", { cache: "no-store" });
 }
 
 export function sendChat(message: string, conversationId?: string, token?: string) {

@@ -101,6 +101,22 @@ async def categories(response: Response) -> list[str]:
     return sorted({product.category for product in search_products()})
 
 
+@app.get("/categories/summary")
+async def category_summaries(response: Response) -> list[dict]:
+    response.headers["Cache-Control"] = "public, max-age=60, stale-while-revalidate=300"
+    grouped: dict[str, list] = {}
+    for product in search_products():
+        grouped.setdefault(product.category, []).append(product)
+    return [
+        {
+            "slug": category,
+            "image_url": max(products, key=lambda product: product.rating).image_url,
+            "product_count": len(products),
+        }
+        for category, products in sorted(grouped.items())
+    ]
+
+
 @app.post("/search", response_model=ProductList)
 async def search(request: SearchRequest, user: Annotated[User, Depends(current_user)]) -> ProductList:
     items = search_agent.run(request)

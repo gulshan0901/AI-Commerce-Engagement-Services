@@ -7,7 +7,7 @@ Supabase PostgreSQL is the system of record. pgvector is enabled in the same dat
 | Table | Responsibility |
 | --- | --- |
 | `users` | Customer profile and explicit preferences |
-| `products` | Catalogue, inventory, pricing, and specifications |
+| `products` | Catalogue, inventory, pricing, specifications, source, and external identifier |
 | `orders` | Order status, totals, tracking, and item snapshot |
 | `conversations` | Customer chat sessions |
 | `messages` | User, assistant, tool, and human messages |
@@ -23,3 +23,5 @@ The commerce expansion introduces `categories`, `order_items`, and `reviews`. Ex
 Migrations live in `backend/database/migrations` and must be applied in numeric order.
 
 Analytics and feedback rows are user-scoped. Row-level security permits authenticated customers to read only their own records; privileged event writes remain a backend responsibility.
+
+Migration `008_product_catalogue_source.sql` adds idempotent external-source keys. The DummyJSON importer upserts on SKU, so catalogue synchronization can be safely rerun without creating duplicate products.
