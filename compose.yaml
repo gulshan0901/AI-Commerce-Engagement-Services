@@ -1,0 +1,20 @@
+# Production deployment definition consumed by Defang and its GitHub Action.
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      ENVIRONMENT: production
+      FRONTEND_URL: ${FRONTEND_URL}
+      REQUIRE_AUTH: ${REQUIRE_AUTH:-true}
+      SUPABASE_URL: ${SUPABASE_URL}
+      SUPABASE_JWT_SECRET: ${SUPABASE_JWT_SECRET:-}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-5.6-sol}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-text-embedding-3-small}
+      MEMORY_DATABASE_PATH: ${MEMORY_DATABASE_PATH:-:memory:}
+      PRODUCT_API_URL: ${PRODUCT_API_URL:-https://dummyjson.com/products?limit=0}
