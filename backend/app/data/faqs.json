@@ -1,0 +1,32 @@
+[
+  {
+    "id": "returns-window",
+    "question": "What is the return window?",
+    "answer": "Eligible products can be returned within 30 days of delivery. Items must be in their original condition with included accessories and packaging.",
+    "keywords": ["return", "returns", "return window", "send back"]
+  },
+  {
+    "id": "refund-timing",
+    "question": "When will I receive my refund?",
+    "answer": "Approved refunds are issued to the original payment method within 5 to 10 business days after the returned item is inspected.",
+    "keywords": ["refund", "money back", "refund timing"]
+  },
+  {
+    "id": "shipping",
+    "question": "How long does shipping take?",
+    "answer": "In-stock products normally leave the warehouse within one business day. Standard delivery typically takes 3 to 5 business days.",
+    "keywords": ["shipping", "delivery", "arrive", "how long"]
+  },
+  {
+    "id": "order-tracking",
+    "question": "How do I track an order?",
+    "answer": "Open Orders while signed in to see the latest status and tracking number for every order associated with your account.",
+    "keywords": ["track", "tracking", "order status", "where is my order"]
+  },
+  {
+    "id": "recommendations",
+    "question": "How are AI recommendations generated?",
+    "answer": "ACE retrieves products from the application catalogue, applies your stated constraints, and asks the model to explain only those verified records.",
+    "keywords": ["recommendation", "recommended", "ai", "why selected"]
+  }
+]

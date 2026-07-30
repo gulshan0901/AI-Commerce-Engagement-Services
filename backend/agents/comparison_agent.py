@@ -1,0 +1,3 @@
+from app.agents.comparison_agent import ComparisonAgent
+
+__all__ = ["ComparisonAgent"]

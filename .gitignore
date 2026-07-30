@@ -2,6 +2,12 @@
 
 # dependencies
 /node_modules
+frontend/node_modules/
+frontend/.next/
+backend/.venv/
+backend/__pycache__/
+backend/.pytest_cache/
+*.pyc
 /.pnp
 .pnp.js
 
@@ -33,4 +39,3 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
-next-env.d.ts

@@ -1,0 +1,51 @@
+[
+  {
+    "id": "lap-001", "name": "Apex G15", "brand": "NovaTech", "category": "laptops",
+    "description": "A balanced 15-inch gaming laptop for high-refresh 1080p play.",
+    "price": 1099, "rating": 4.7, "in_stock": true,
+    "image_url": "https://images.unsplash.com/photo-1593642632823-8f785ba67e45?auto=format&fit=crop&w=900&q=80",
+    "specs": {"CPU": "Ryzen 7", "GPU": "RTX 4060", "RAM": "16 GB", "Storage": "1 TB SSD", "Weight": "2.1 kg"},
+    "tags": ["gaming", "laptop", "performance", "144hz"]
+  },
+  {
+    "id": "lap-002", "name": "Stratus 14", "brand": "Orbit", "category": "laptops",
+    "description": "A portable performance laptop with all-day battery life.",
+    "price": 1199, "rating": 4.8, "in_stock": true,
+    "image_url": "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=900&q=80",
+    "specs": {"CPU": "Core Ultra 7", "GPU": "RTX 4050", "RAM": "16 GB", "Storage": "1 TB SSD", "Weight": "1.5 kg"},
+    "tags": ["gaming", "laptop", "portable", "battery"]
+  },
+  {
+    "id": "lap-003", "name": "Forge 17", "brand": "NovaTech", "category": "laptops",
+    "description": "A large-screen desktop replacement for competitive gaming.",
+    "price": 1499, "rating": 4.6, "in_stock": false,
+    "image_url": "https://images.unsplash.com/photo-1603302576837-37561b2e2302?auto=format&fit=crop&w=900&q=80",
+    "specs": {"CPU": "Ryzen 9", "GPU": "RTX 4070", "RAM": "32 GB", "Storage": "1 TB SSD", "Weight": "2.8 kg"},
+    "tags": ["gaming", "laptop", "premium", "17-inch"]
+  },
+  {
+    "id": "shoe-001", "name": "Velocity Run 4", "brand": "Fleet", "category": "shoes",
+    "description": "Lightweight neutral daily running shoes with responsive cushioning.",
+    "price": 129, "rating": 4.8, "in_stock": true,
+    "image_url": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=900&q=80",
+    "specs": {"Type": "Neutral", "Weight": "255 g", "Drop": "8 mm", "Surface": "Road"},
+    "tags": ["running", "shoes", "lightweight", "road"]
+  },
+  {
+    "id": "shoe-002", "name": "Trailbound Pro", "brand": "Summit", "category": "shoes",
+    "description": "Grippy trail shoes with a protective rock plate.",
+    "price": 149, "rating": 4.6, "in_stock": true,
+    "image_url": "https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=900&q=80",
+    "specs": {"Type": "Trail", "Weight": "295 g", "Drop": "6 mm", "Surface": "Trail"},
+    "tags": ["running", "shoes", "trail", "grip"]
+  },
+  {
+    "id": "head-001", "name": "Pulse ANC", "brand": "Sonora", "category": "audio",
+    "description": "Wireless over-ear headphones with adaptive noise cancellation.",
+    "price": 199, "rating": 4.7, "in_stock": true,
+    "image_url": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=900&q=80",
+    "specs": {"Battery": "40 hours", "Connection": "Bluetooth 5.3", "Weight": "245 g", "ANC": "Adaptive"},
+    "tags": ["headphones", "audio", "wireless", "noise-cancelling"]
+  }
+]
+
