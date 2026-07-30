@@ -31,7 +31,7 @@ jobs:
       id-token: write
     concurrency:
       cancel-in-progress: false
-      group: deploy-ai-commerce-engagement-services-${{ github.event.inputs.stack || 'production' }}
+      group: deploy-ai-commerce-engagement-services1-${{ github.event.inputs.stack || 'production' }}
     environment: defang-${{ github.event.inputs.stack || 'production' }}
     steps:
       - name: Checkout Repo
@@ -40,13 +40,13 @@ jobs:
         uses: DefangLabs/defang-github-action@v2
         with:
           command: ${{ github.event.inputs.action || 'up' }}
-          project: ai-commerce-engagement-services
+          project: ai-commerce-engagement-services1
           stack: ${{ github.event.inputs.stack || 'production' }}
           compose-files: compose.yaml
       - name: Deployment Summary
         uses: DefangLabs/defang-github-action@v2
         with:
           command: services
-          project: ai-commerce-engagement-services
+          project: ai-commerce-engagement-services1
           stack: ${{ github.event.inputs.stack || 'production' }}
           compose-file: compose.yaml
