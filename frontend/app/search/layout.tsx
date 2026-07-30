@@ -1,3 +1,4 @@
+/** Supplies search metadata for catalogue query results. */
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Search Products", description: "Search products by name, brand, category, price, and shopping intent." };

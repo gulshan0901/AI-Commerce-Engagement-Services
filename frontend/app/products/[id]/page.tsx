@@ -1,5 +1,7 @@
 "use client";
 
+/** Loads a product and presents purchasing details, specifications, and stock. */
+
 import AddShoppingCartRoundedIcon from "@mui/icons-material/AddShoppingCartRounded";
 import LocalShippingRoundedIcon from "@mui/icons-material/LocalShippingRounded";
 import ReplayRoundedIcon from "@mui/icons-material/ReplayRounded";

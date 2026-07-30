@@ -1,3 +1,4 @@
+/** Renders an infinitely paginated catalogue scoped to one category. */
 import { Container, Typography } from "@mui/material";
 import { CommerceLayout } from "@/components/CommerceLayout";
 import { ProductListing } from "@/features/catalogue/ProductListing";

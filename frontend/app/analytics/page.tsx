@@ -1,5 +1,7 @@
 "use client";
 
+/** Presents conversation, agent, token, latency, and tool-usage analytics. */
+
 import InsightsRoundedIcon from "@mui/icons-material/InsightsRounded";
 import { Alert, Box, CircularProgress, Container, Grid, LinearProgress, Paper, Stack, Table, TableBody, TableCell, TableHead, TableRow, Typography } from "@mui/material";
 import Link from "next/link";

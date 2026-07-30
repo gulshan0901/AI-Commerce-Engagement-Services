@@ -1,3 +1,5 @@
+"""Coordinate natural-language shopping assistance and recommendations."""
+
 from ..assistant import answer_shopping_request
 from ..config import Settings
 from ..models import ChatRequest, ChatResponse, ConversationMessage, MemoryProfile, Product

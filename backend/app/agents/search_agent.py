@@ -1,3 +1,5 @@
+"""Execute structured product searches against the grounded catalogue."""
+
 from ..catalogue import search_products
 from ..models import Product, SearchRequest
 
@@ -7,4 +9,3 @@ class SearchAgent:
 
     def run(self, request: SearchRequest) -> list[Product]:
         return search_products(request.query, request.category, request.max_price)
-

@@ -1,3 +1,5 @@
+"""Generate OpenAI embeddings or deterministic local vector fallbacks."""
+
 import hashlib
 import math
 import re

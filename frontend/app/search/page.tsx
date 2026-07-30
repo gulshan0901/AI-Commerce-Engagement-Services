@@ -1,5 +1,7 @@
 "use client";
 
+/** Resolves typed or Emma-generated queries into focused product results. */
+
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 import { Alert, Button, CircularProgress, Container, Grid, InputAdornment, Stack, TextField, Typography } from "@mui/material";
 import { FormEvent, Suspense, useEffect, useState } from "react";

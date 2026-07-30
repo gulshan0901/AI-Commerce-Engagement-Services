@@ -1,3 +1,5 @@
+"""Extract and persist durable customer shopping preferences."""
+
 import asyncio
 
 from ..services.memory import MemoryStore, SupabaseMemoryStore

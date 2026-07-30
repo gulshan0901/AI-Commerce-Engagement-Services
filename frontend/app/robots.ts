@@ -1,3 +1,4 @@
+/** Generates crawler rules that protect account-specific application routes. */
 import type { MetadataRoute } from "next";
 
 export default function robots(): MetadataRoute.Robots {

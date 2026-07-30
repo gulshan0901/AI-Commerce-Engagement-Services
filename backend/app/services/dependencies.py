@@ -1,3 +1,5 @@
+"""Construct and cache environment-specific persistence service instances."""
+
 from functools import lru_cache
 
 from ..config import get_settings

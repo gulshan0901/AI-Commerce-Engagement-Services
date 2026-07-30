@@ -1,3 +1,4 @@
+/** Defines global metadata, structured data, viewport behavior, and providers. */
 import type { Metadata, Viewport } from "next";
 import { Providers } from "./providers";
 

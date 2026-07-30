@@ -1,5 +1,7 @@
 "use client";
 
+/** Answers policy questions and exposes confidence-based human escalation. */
+
 import LocalShippingRoundedIcon from "@mui/icons-material/LocalShippingRounded";
 import ReplayRoundedIcon from "@mui/icons-material/ReplayRounded";
 import SendRoundedIcon from "@mui/icons-material/SendRounded";

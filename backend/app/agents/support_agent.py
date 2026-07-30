@@ -1,3 +1,5 @@
+"""Answer policy questions and flag low-confidence cases for escalation."""
+
 from ..models import FaqSource, SupportRequest, SupportResponse
 from ..services.faqs import search_faqs
 

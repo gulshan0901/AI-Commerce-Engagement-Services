@@ -1,3 +1,5 @@
+"""Persist conversations, messages, and user preferences locally or remotely."""
+
 import json
 import re
 import sqlite3

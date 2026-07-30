@@ -1,5 +1,7 @@
 "use client";
 
+/** Manages the full-page assistant conversation and recommendation experience. */
+
 import SendRoundedIcon from "@mui/icons-material/SendRounded";
 import SmartToyOutlinedIcon from "@mui/icons-material/SmartToyOutlined";
 import AddPhotoAlternateRoundedIcon from "@mui/icons-material/AddPhotoAlternateRounded";

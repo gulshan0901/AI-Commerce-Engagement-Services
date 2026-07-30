@@ -1,5 +1,7 @@
 "use client";
 
+/** Lists saved conversations and reports the currently selected history item. */
+
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import HistoryRoundedIcon from "@mui/icons-material/HistoryRounded";
 import { Button, List, ListItemButton, ListItemText, Paper, Stack, Typography } from "@mui/material";

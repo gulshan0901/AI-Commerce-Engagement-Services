@@ -1,3 +1,5 @@
+"""Handle authenticated order tracking and return workflows."""
+
 from ..models import ReturnResponse, TrackOrderResponse
 from ..services.orders import LocalOrderStore, SupabaseOrderStore
 

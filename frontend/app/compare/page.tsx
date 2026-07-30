@@ -1,5 +1,7 @@
 "use client";
 
+/** Lets authenticated customers build a grounded product comparison matrix. */
+
 import { Alert, Box, Button, Checkbox, CircularProgress, Container, FormControlLabel, Grid, Paper, Stack, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import { AuthPanel } from "@/components/AuthPanel";

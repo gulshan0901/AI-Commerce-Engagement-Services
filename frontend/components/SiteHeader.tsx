@@ -1,5 +1,7 @@
 "use client";
 
+/** Renders responsive primary navigation, assistant access, and cart status. */
+
 import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import MenuRoundedIcon from "@mui/icons-material/MenuRounded";

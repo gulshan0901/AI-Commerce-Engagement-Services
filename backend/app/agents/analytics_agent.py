@@ -1,3 +1,5 @@
+"""Translate analytics stores into dashboard-ready operational metrics."""
+
 from ..services.analytics import LocalAnalyticsStore, SupabaseAnalyticsStore
 
 

@@ -1,3 +1,5 @@
+"""Index product embeddings and perform semantic catalogue retrieval."""
+
 import math
 
 import httpx

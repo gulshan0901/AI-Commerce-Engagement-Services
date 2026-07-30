@@ -1,5 +1,7 @@
 "use client";
 
+/** Loads and displays every product category with representative imagery. */
+
 import { Alert, Box, CircularProgress, Container, Grid, Paper, Stack, Typography } from "@mui/material";
 import Image from "next/image";
 import Link from "next/link";

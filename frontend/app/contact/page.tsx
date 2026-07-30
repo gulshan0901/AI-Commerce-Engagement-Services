@@ -1,5 +1,7 @@
 "use client";
 
+/** Presents contact channels and validates the client-side inquiry form. */
+
 import AccessTimeRoundedIcon from "@mui/icons-material/AccessTimeRounded";
 import EmailRoundedIcon from "@mui/icons-material/EmailRounded";
 import ForumRoundedIcon from "@mui/icons-material/ForumRounded";

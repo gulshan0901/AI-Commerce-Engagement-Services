@@ -1,3 +1,5 @@
+"""Validate, price, persist, track, and return customer orders."""
+
 from datetime import datetime, timezone
 from threading import RLock
 from uuid import uuid4

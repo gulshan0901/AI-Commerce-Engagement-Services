@@ -1,3 +1,4 @@
+/** Creates the browser-safe Supabase client from public environment settings. */
 import { createBrowserClient } from "@supabase/ssr";
 
 let browserClient: ReturnType<typeof createBrowserClient> | null = null;

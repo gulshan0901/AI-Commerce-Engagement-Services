@@ -1,5 +1,7 @@
 "use client";
 
+/** Defers loading the floating assistant until the browser becomes idle. */
+
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 

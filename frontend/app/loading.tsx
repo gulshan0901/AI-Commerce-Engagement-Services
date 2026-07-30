@@ -1,3 +1,4 @@
+/** Provides an accessible route-level loading indicator during navigation. */
 import { Box, LinearProgress } from "@mui/material";
 
 export default function Loading() {

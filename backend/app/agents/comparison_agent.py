@@ -1,3 +1,5 @@
+"""Build grounded side-by-side product comparisons and verdicts."""
+
 from ..catalogue import all_products
 from ..models import CompareRequest, CompareResponse, ComparisonRow, Product
 
@@ -27,4 +29,3 @@ class ComparisonAgent:
     @staticmethod
     def _score(product: Product) -> float:
         return (2 if product.in_stock else -5) + product.rating * 2 - product.price / 1000
-

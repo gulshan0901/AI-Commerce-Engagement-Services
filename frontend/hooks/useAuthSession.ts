@@ -1,5 +1,7 @@
 "use client";
 
+/** Subscribes React components to the current Supabase authentication session. */
+
 import { useEffect, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { createSupabaseClient } from "@/services/supabase";

@@ -1,3 +1,5 @@
+"""Rank catalogue products and explain why each recommendation fits."""
+
 from ..catalogue import products_for_message
 from ..models import Product, RecommendRequest, Recommendation
 
@@ -17,4 +19,3 @@ class RecommendationAgent:
     @staticmethod
     def _reasons(product: Product) -> list[str]:
         return [f"Rated {product.rating}/5", f"Costs ${product.price:,.0f}", "Available now"]
-

@@ -1,3 +1,5 @@
+"""Load and search the curated policy and FAQ knowledge base."""
+
 import json
 import re
 from functools import lru_cache
@@ -21,4 +23,3 @@ def search_faqs(question: str, limit: int = 3) -> list[tuple[float, dict]]:
         if score > 0:
             ranked.append((min(score, 1.0), faq))
     return sorted(ranked, key=lambda item: item[0], reverse=True)[:limit]
-

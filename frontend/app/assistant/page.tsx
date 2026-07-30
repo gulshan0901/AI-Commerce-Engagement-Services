@@ -1,5 +1,7 @@
 "use client";
 
+/** Hosts authentication, conversation history, and the full shopping assistant. */
+
 import { Box, Button, Container, Grid, Stack, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import { AuthPanel } from "@/components/AuthPanel";

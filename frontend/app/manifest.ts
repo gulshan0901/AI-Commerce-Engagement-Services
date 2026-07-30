@@ -1,3 +1,4 @@
+/** Generates the installable web application manifest. */
 import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {

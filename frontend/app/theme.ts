@@ -1,5 +1,7 @@
 "use client";
 
+/** Centralizes accessible colors, typography, responsive styles, and MUI defaults. */
+
 import { createTheme } from "@mui/material/styles";
 
 export const theme = createTheme({

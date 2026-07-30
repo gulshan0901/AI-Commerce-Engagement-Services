@@ -1,3 +1,4 @@
+/** Defines shared frontend contracts for catalogue, chat, analytics, and support. */
 export type Product = {
   id: string;
   name: string;

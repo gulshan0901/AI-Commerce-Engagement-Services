@@ -1,3 +1,5 @@
+"""Expose the FastAPI routes and coordinate application-level workflows."""
+
 import asyncio
 import json
 from time import perf_counter

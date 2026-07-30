@@ -1,3 +1,4 @@
+/** Wraps commerce pages with accessible navigation, main content, and footer. */
 import { Box, Container, Stack, Typography } from "@mui/material";
 import Link from "next/link";
 import { SiteHeader } from "./SiteHeader";

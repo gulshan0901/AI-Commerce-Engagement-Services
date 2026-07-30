@@ -1,3 +1,5 @@
+"""Generate grounded shopping answers through OpenAI or local fallbacks."""
+
 import json
 from uuid import uuid4
 

@@ -1,3 +1,4 @@
+/** Renders accessible expandable answers to common commerce questions. */
 import { Accordion, AccordionDetails, AccordionSummary, Container, Typography } from "@mui/material";
 import ExpandMoreRoundedIcon from "@mui/icons-material/ExpandMoreRounded";
 import { CommerceLayout } from "@/components/CommerceLayout";

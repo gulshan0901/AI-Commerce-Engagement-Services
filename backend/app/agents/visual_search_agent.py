@@ -1,3 +1,5 @@
+"""Analyze uploaded images and retrieve visually relevant catalogue items."""
+
 import json
 import re
 from difflib import SequenceMatcher

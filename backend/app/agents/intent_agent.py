@@ -1,3 +1,5 @@
+"""Classify customer messages into supported commerce intents."""
+
 import re
 
 from ..models import IntentResult

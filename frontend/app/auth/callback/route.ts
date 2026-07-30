@@ -1,3 +1,4 @@
+/** Exchanges Supabase authentication codes and redirects users back into ACE. */
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 

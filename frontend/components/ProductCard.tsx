@@ -1,5 +1,7 @@
 "use client";
 
+/** Presents a reusable product summary with explanations and cart actions. */
+
 import AddShoppingCartRoundedIcon from "@mui/icons-material/AddShoppingCartRounded";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import { Box, Button, Card, CardContent, Chip, Rating, Stack, Typography } from "@mui/material";

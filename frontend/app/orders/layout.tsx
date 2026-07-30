@@ -1,3 +1,4 @@
+/** Prevents authenticated customer order history from being indexed. */
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Your Orders", robots: { index: false, follow: false } };

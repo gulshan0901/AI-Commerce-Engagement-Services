@@ -1,5 +1,7 @@
 "use client";
 
+/** Owns persistent browser cart state and exposes safe mutation helpers. */
+
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { Product } from "@/types";
 
@@ -50,4 +52,3 @@ export function useCart() {
   if (!value) throw new Error("useCart must be used within CartProvider");
   return value;
 }
-

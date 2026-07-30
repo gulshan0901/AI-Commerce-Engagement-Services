@@ -1,5 +1,7 @@
 "use client";
 
+/** Provides Supabase sign-in, sign-up, and local demo authentication controls. */
+
 import { useState } from "react";
 import { Alert, Button, Stack, TextField, Typography } from "@mui/material";
 import { createSupabaseClient, isSupabaseConfigured } from "@/services/supabase";

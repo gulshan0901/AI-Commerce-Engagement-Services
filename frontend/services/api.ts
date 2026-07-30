@@ -1,3 +1,4 @@
+/** Centralizes typed FastAPI requests, session refresh, and lightweight caching. */
 import { AnalyticsResponse, CategorySummary, ChatResponse, CompareResponse, ConversationDetail, ConversationObservability, ConversationReview, ConversationSummary, FeedbackResponse, ImprovementResponse, ObservabilityConversation, Product, ProductPage, SupportResponse, VisualSearchResponse } from "@/types";
 import { Order, ReturnResponse, TrackOrderResponse } from "@/types/order";
 import type { CartLine } from "@/features/cart/CartProvider";

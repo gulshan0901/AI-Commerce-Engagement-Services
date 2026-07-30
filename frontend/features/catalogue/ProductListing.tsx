@@ -1,5 +1,7 @@
 "use client";
 
+/** Coordinates debounced filtering and accessible infinite catalogue pagination. */
+
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 import { Alert, Box, Button, CircularProgress, Grid, InputAdornment, LinearProgress, Stack, TextField, Typography } from "@mui/material";
 import { useCallback, useEffect, useRef, useState } from "react";

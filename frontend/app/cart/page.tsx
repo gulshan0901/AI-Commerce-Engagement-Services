@@ -1,5 +1,7 @@
 "use client";
 
+/** Renders responsive cart lines, quantity controls, and checkout navigation. */
+
 import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
 import { Box, Button, Container, Divider, IconButton, Paper, Stack, TextField, Typography } from "@mui/material";
 import Image from "next/image";

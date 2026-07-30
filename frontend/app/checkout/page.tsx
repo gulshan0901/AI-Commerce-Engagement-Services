@@ -1,5 +1,7 @@
 "use client";
 
+/** Validates delivery details, stock state, and database-backed order creation. */
+
 import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
 import { Alert, Button, Chip, CircularProgress, Container, Grid, IconButton, Paper, Stack, TextField, Typography } from "@mui/material";
 import { FormEvent, useState } from "react";

@@ -1,3 +1,5 @@
+"""Load, normalize, cache, and search the multi-source product catalogue."""
+
 import json
 import re
 from functools import lru_cache

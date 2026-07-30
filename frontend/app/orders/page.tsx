@@ -1,5 +1,7 @@
 "use client";
 
+/** Displays customer purchases, fulfillment progress, tracking, and returns. */
+
 import Inventory2RoundedIcon from "@mui/icons-material/Inventory2Rounded";
 import LocalShippingRoundedIcon from "@mui/icons-material/LocalShippingRounded";
 import { Alert, Box, Button, Chip, CircularProgress, Container, Divider, Grid, Paper, Stack, Step, StepLabel, Stepper, TextField, Typography } from "@mui/material";

@@ -1,3 +1,4 @@
+/** Marks authenticated observability pages as private in search metadata. */
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Agent Analytics", robots: { index: false, follow: false } };

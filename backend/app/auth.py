@@ -1,3 +1,5 @@
+"""Authenticate API requests with Supabase JWTs or local demo identities."""
+
 from typing import Annotated
 
 import jwt

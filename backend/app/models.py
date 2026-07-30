@@ -1,3 +1,5 @@
+"""Define the validated API request, response, and domain data contracts."""
+
 from datetime import datetime
 from typing import Literal
 

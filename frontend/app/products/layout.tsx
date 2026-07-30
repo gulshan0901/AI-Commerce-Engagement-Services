@@ -1,3 +1,4 @@
+/** Supplies search metadata shared by catalogue and product-detail routes. */
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Products", description: "Browse products, compare specifications, ratings, prices, and availability with explainable AI recommendations." };

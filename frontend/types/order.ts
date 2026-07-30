@@ -1,3 +1,4 @@
+/** Defines frontend contracts for order, tracking, and return workflows. */
 export type OrderItem = {
   product_id: string;
   name: string;
