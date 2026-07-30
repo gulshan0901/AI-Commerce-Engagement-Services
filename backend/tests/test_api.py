@@ -199,3 +199,15 @@ def test_phase4_feedback_and_user_scoped_analytics() -> None:
 def test_feedback_rejects_conversation_not_owned_by_user() -> None:
     response = client.post("/feedback", json={"conversation_id": "missing", "rating": 4})
     assert response.status_code == 404
+
+
+def test_visual_search_falls_back_to_grounded_filename_matching() -> None:
+    response = client.post("/search/visual", json={
+        "image_data_url": "data:image/png;base64,aGVsbG8td29ybGQ=",
+        "filename": "running-shoes.png",
+    })
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["source"] == "fallback"
+    assert payload["similar"]
+    assert all(item["product"]["id"].startswith("shoe-") for item in payload["similar"])

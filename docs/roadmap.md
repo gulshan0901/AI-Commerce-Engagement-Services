@@ -28,5 +28,6 @@
 - Role-based administration and approvals
 - Inventory and content management
 - Payment provider integration
-- Voice, image search, multilingual support
+- Voice commerce and image product search (complete)
+- Multilingual support
 - Review summarization and human escalation

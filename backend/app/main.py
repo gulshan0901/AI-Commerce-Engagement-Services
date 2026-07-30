@@ -13,6 +13,7 @@ from .agents.order_agent import OrderAgent
 from .agents.recommendation_agent import RecommendationAgent
 from .agents.search_agent import SearchAgent
 from .agents.support_agent import SupportAgent
+from .agents.visual_search_agent import VisualSearchAgent
 from .auth import current_user
 from .catalogue import search_products
 from .config import Settings, get_settings
@@ -21,6 +22,7 @@ from .models import (
     ConversationSummary, Order, OrderItem, PhaseStatus, ProductList, Recommendation,
     FeedbackRequest, FeedbackResponse, RecommendRequest, ReturnRequest, ReturnResponse, SearchRequest, SemanticSearchResponse,
     SupportRequest, SupportResponse, TrackOrderRequest, TrackOrderResponse, User,
+    VisualSearchRequest, VisualSearchResponse,
 )
 from .services.faqs import all_faqs
 from .services.dependencies import get_analytics_store, get_memory_store, get_order_store, get_retrieval_service
@@ -32,6 +34,7 @@ recommendation_agent = RecommendationAgent()
 comparison_agent = ComparisonAgent()
 support_agent = SupportAgent()
 order_agent = OrderAgent(get_order_store())
+visual_search_agent = VisualSearchAgent()
 app = FastAPI(title=settings.app_name, version="0.1.0")
 app.add_middleware(
     CORSMiddleware,
@@ -143,6 +146,24 @@ async def compare(
         return comparison_agent.run(request)
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@app.post("/search/visual", response_model=VisualSearchResponse)
+async def visual_search(
+    request: VisualSearchRequest,
+    user: Annotated[User, Depends(current_user)],
+    app_settings: Annotated[Settings, Depends(get_settings)],
+) -> VisualSearchResponse:
+    started = perf_counter()
+    try:
+        result = await visual_search_agent.run(request, app_settings)
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail="The image could not be analyzed") from exc
+    await get_analytics_store().record(
+        user.id, "visual_search.completed", "visual_search",
+        round((perf_counter() - started) * 1000), properties={"source": result.source, "tool": "vision"},
+    )
+    return result
 
 
 @app.get("/faqs")

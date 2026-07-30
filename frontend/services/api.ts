@@ -1,4 +1,4 @@
-import { AnalyticsResponse, CategorySummary, ChatResponse, CompareResponse, ConversationDetail, ConversationSummary, FeedbackResponse, Product, SupportResponse } from "@/types";
+import { AnalyticsResponse, CategorySummary, ChatResponse, CompareResponse, ConversationDetail, ConversationSummary, FeedbackResponse, Product, SupportResponse, VisualSearchResponse } from "@/types";
 import { Order, ReturnResponse, TrackOrderResponse } from "@/types/order";
 import type { CartLine } from "@/features/cart/CartProvider";
 import { createSupabaseClient } from "@/services/supabase";
@@ -108,4 +108,10 @@ export function submitFeedback(conversationId: string, rating: number, comment: 
 
 export function getAnalytics(token: string) {
   return request<AnalyticsResponse>("/analytics", undefined, token);
+}
+
+export function visualSearch(imageDataUrl: string, filename: string, token: string) {
+  return request<VisualSearchResponse>("/search/visual", {
+    method: "POST", body: JSON.stringify({ image_data_url: imageDataUrl, filename }),
+  }, token);
 }

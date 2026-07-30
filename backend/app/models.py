@@ -218,3 +218,16 @@ class AnalyticsResponse(BaseModel):
     agent_performance: list[AgentMetric]
     tool_usage: dict[str, int]
     recent_events: int
+
+
+class VisualSearchRequest(BaseModel):
+    image_data_url: str = Field(min_length=20, max_length=10_000_000)
+    filename: str = Field(default="product-image", max_length=255)
+
+
+class VisualSearchResponse(BaseModel):
+    analysis: str
+    similar: list[Recommendation]
+    cheaper_alternatives: list[Recommendation]
+    matching_accessories: list[Recommendation]
+    source: Literal["openai", "fallback"]

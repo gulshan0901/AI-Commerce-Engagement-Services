@@ -8,6 +8,7 @@ All protected endpoints accept `Authorization: Bearer <supabase-access-token>`.
 | GET | `/products` | Available | Catalogue listing and filters |
 | POST | `/search` | Available | Lexical catalogue search |
 | POST | `/search/semantic` | Available | pgvector or local semantic search |
+| POST | `/search/visual` | Available | Analyze a product image and return catalogue-grounded matches |
 | POST | `/recommend` | Available | Explainable product ranking |
 | POST | `/compare` | Available | Compare two to four catalogue products |
 | POST | `/chat` | Available | Grounded shopping conversation |

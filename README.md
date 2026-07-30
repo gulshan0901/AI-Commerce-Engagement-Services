@@ -22,6 +22,8 @@ AI agents receive products and business records from repositories. They never in
 - Product listing, text search, category and price filters
 - DummyJSON-powered catalogue with 194 external products across all available categories, plus local fallback products
 - Natural-language shopping requests and explainable recommendations
+- Visual product search with similar items, cheaper alternatives, and accessory matching
+- Browser voice input with spoken assistant responses
 - OpenAI Responses API integration with a deterministic local fallback
 - Supabase pgvector semantic search with a deterministic local-vector fallback
 - Catalogue-grounded retrieval-augmented generation (RAG)
@@ -100,6 +102,7 @@ Never expose `OPENAI_API_KEY` or the Supabase service-role key to the frontend.
 - `POST /chat`
 - `POST /search`
 - `POST /search/semantic`
+- `POST /search/visual`
 - `POST /recommend`
 - `POST /compare`
 - `GET /faqs`
