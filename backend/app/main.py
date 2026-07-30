@@ -65,9 +65,13 @@ async def products(
     query: str = Query(default="", max_length=120),
     category: str | None = None,
     max_price: float | None = Query(default=None, gt=0),
+    offset: int = Query(default=0, ge=0),
+    limit: int | None = Query(default=None, ge=1, le=100),
 ) -> ProductList:
     items = search_products(query, category, max_price)
-    return ProductList(items=items, total=len(items))
+    # Keep limit optional so existing API clients still receive the complete catalogue.
+    page = items[offset:offset + limit] if limit is not None else items[offset:]
+    return ProductList(items=page, total=len(items))
 
 
 @app.post("/api/v1/chat", response_model=ChatResponse)
@@ -87,10 +91,14 @@ async def public_products(
     query: str = Query(default="", max_length=120),
     category: str | None = None,
     max_price: float | None = Query(default=None, gt=0),
+    offset: int = Query(default=0, ge=0),
+    limit: int | None = Query(default=None, ge=1, le=100),
 ) -> ProductList:
     response.headers["Cache-Control"] = "public, max-age=30, stale-while-revalidate=120"
     items = search_products(query, category, max_price)
-    return ProductList(items=items, total=len(items))
+    # Slice only after filtering so `total` remains useful to infinite-scroll clients.
+    page = items[offset:offset + limit] if limit is not None else items[offset:]
+    return ProductList(items=page, total=len(items))
 
 
 @app.get("/products/{product_id}")

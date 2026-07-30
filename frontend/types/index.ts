@@ -12,6 +12,9 @@ export type Product = {
   tags: string[];
 };
 
+/** A single server-side catalogue page and the total number of matching products. */
+export type ProductPage = { items: Product[]; total: number };
+
 export type Recommendation = { product: Product; reasons: string[] };
 export type ChatResponse = {
   conversation_id: string;

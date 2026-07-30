@@ -1,4 +1,4 @@
-import { AnalyticsResponse, CategorySummary, ChatResponse, CompareResponse, ConversationDetail, ConversationObservability, ConversationReview, ConversationSummary, FeedbackResponse, ImprovementResponse, ObservabilityConversation, Product, SupportResponse, VisualSearchResponse } from "@/types";
+import { AnalyticsResponse, CategorySummary, ChatResponse, CompareResponse, ConversationDetail, ConversationObservability, ConversationReview, ConversationSummary, FeedbackResponse, ImprovementResponse, ObservabilityConversation, Product, ProductPage, SupportResponse, VisualSearchResponse } from "@/types";
 import { Order, ReturnResponse, TrackOrderResponse } from "@/types/order";
 import type { CartLine } from "@/features/cart/CartProvider";
 import { createSupabaseClient } from "@/services/supabase";
@@ -32,6 +32,17 @@ export async function getProducts(query = "", token?: string): Promise<Product[]
   const result = await request<{ items: Product[] }>(`/products?query=${encodeURIComponent(query)}`, undefined, token);
   if (!token) catalogueCache.set(cacheKey, { expires: Date.now() + 30_000, value: result.items });
   return result.items;
+}
+
+/** Fetches one bounded catalogue page without filling the full-catalogue cache. */
+export function getProductPage(options: { query?: string; category?: string; offset: number; limit: number; signal?: AbortSignal }) {
+  const params = new URLSearchParams({
+    query: options.query?.trim() ?? "",
+    offset: String(options.offset),
+    limit: String(options.limit),
+  });
+  if (options.category) params.set("category", options.category);
+  return request<ProductPage>(`/products?${params.toString()}`, { signal: options.signal });
 }
 
 export async function getProduct(productId: string) {

@@ -39,6 +39,20 @@ def test_public_commerce_catalogue_contract() -> None:
     assert client.get("/products/missing").status_code == 404
 
 
+def test_catalogue_pagination_preserves_filtered_total() -> None:
+    first = client.get("/products", params={"offset": 0, "limit": 2}).json()
+    second = client.get("/products", params={"offset": 2, "limit": 2}).json()
+
+    assert first["total"] >= 4
+    assert len(first["items"]) == 2
+    assert len(second["items"]) == 2
+    assert {item["id"] for item in first["items"]}.isdisjoint(item["id"] for item in second["items"])
+
+    filtered = client.get("/products", params={"category": "laptops", "offset": 0, "limit": 1}).json()
+    assert filtered["total"] == 3
+    assert len(filtered["items"]) == 1
+
+
 def test_chat_recommends_explainable_products_without_api_key() -> None:
     response = client.post("/chat", json={"message": "I need a gaming laptop under $1200"})
     assert response.status_code == 200

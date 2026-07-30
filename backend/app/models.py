@@ -19,6 +19,8 @@ class Product(BaseModel):
 
 
 class ProductList(BaseModel):
+    """A catalogue page plus the unsliced result count for pagination clients."""
+
     items: list[Product]
     total: int
 
