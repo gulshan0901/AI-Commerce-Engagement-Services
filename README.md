@@ -1,49 +1,338 @@
 # AI Commerce Engagement Platform (ACE)
 
-> An enterprise AI-powered commerce platform that enhances customer engagement across the complete shopping journey using intelligent AI agents.
+ACE is a full-stack AI commerce platform where customers can browse products normally or work with Emma, an AI shopping assistant, through text, voice, and visual search.
 
-ACE is an AI engagement layer on top of a complete commerce experience—not a standalone chatbot. Customers can browse and purchase normally, then use grounded AI assistance for discovery, comparison, recommendations, support, and order help.
+Emma uses specialized agents for product discovery, comparisons, recommendations, support, order tracking, returns, memory, and analytics. Recommendations remain grounded in real catalogue data and include explanations.
+
+## Technology stack
+
+| Area | Technology |
+| --- | --- |
+| Frontend | Next.js 15, React 19, TypeScript, MUI |
+| Backend | FastAPI, Python |
+| AI | OpenAI Responses API |
+| Database | Supabase PostgreSQL |
+| Vector search | Supabase pgvector |
+| Authentication | Supabase Auth |
+| Product source | Supabase with DummyJSON and bundled fallbacks |
+| Deployment | Vercel and Koyeb |
+| CI | GitHub Actions |
+
+## Features
+
+- Responsive product catalogue, categories, search, details, cart, checkout, and orders
+- Text, voice, and image-based AI shopping assistance
+- Explainable product recommendations and product comparison
+- Supabase authentication and user-scoped data
+- Database-backed orders, tracking, returns, feedback, and chat history
+- Retrieval-augmented generation with pgvector semantic search
+- Customer preference memory
+- Agent observability with token, latency, tool, trace, and quality analysis
+- SEO metadata, structured data, sitemap, accessibility, and optimized images
+- Deterministic local fallbacks when cloud AI services are not configured
 
 ## Architecture
 
 ```text
-Customer → Next.js Commerce UI → FastAPI APIs → PostgreSQL / pgvector
-                     ↓                ↓
-              AI Assistant → Intent Router → Specialized Agents → OpenAI
+Customer
+   |
+Next.js storefront
+   |
+FastAPI orchestrator
+   |-- Shopping and recommendation agents
+   |-- Search and visual-search agents
+   |-- Support, order, and return agents
+   |-- Review and analytics agents
+   |
+Supabase PostgreSQL + pgvector + OpenAI
 ```
 
-AI agents receive products and business records from repositories. They never invent catalogue items.
+## Prerequisites
 
-## Included
+Install:
 
-- Next.js 15, React 19, TypeScript, and MUI interface
-- Supabase passwordless email authentication (demo mode without credentials)
-- FastAPI API with Supabase JWT verification
-- Product listing, text search, category and price filters
-- DummyJSON-powered catalogue with 194 external products across all available categories, plus local fallback products
-- Natural-language shopping requests and explainable recommendations
-- Visual product search with similar items, cheaper alternatives, and accessory matching
-- Browser voice input with spoken assistant responses
-- OpenAI Responses API integration with a deterministic local fallback
-- Supabase pgvector semantic search with a deterministic local-vector fallback
-- Catalogue-grounded retrieval-augmented generation (RAG)
-- Conversation history and recent-turn context
-- Customer memory for explicitly stated brands, budgets, and sizes
-- API tests, Docker files, and GitHub Actions CI
+- Node.js 22 or later
+- pnpm 11 or later
+- Python 3.12 or later
+- Git
 
-## Product surfaces
+Optional cloud integrations:
 
-- Home, products, categories, product details
-- Cart, checkout, and orders
-- FAQ, about, and contact
-- Dedicated AI shopping assistant
-- Conversation history and explainable recommendations
-- Authenticated Supabase checkout and user-scoped order history
-- Product comparison with a catalogue-grounded decision matrix
-- Grounded FAQ support with confidence-based human escalation
-- Authenticated order tracking and return requests
-- Customer response ratings and durable feedback capture
-- Protected AI analytics dashboard for quality, groundedness, latency, tokens, cost, resolution, and agent usage
+- A [Supabase](https://supabase.com/) project
+- An [OpenAI API](https://platform.openai.com/) key
+
+Enable pnpm if it is not already installed:
+
+```bash
+corepack enable
+corepack prepare pnpm@11 --activate
+```
+
+## Quick start: local demo mode
+
+Demo mode does not require Supabase or OpenAI credentials. Authentication is bypassed, SQLite stores local data, and deterministic AI fallbacks are used.
+
+### 1. Clone and configure
+
+```bash
+git clone https://github.com/gulshan0901/AI-Commerce-Engagement-Services.git
+cd AI-Commerce-Engagement-Services
+```
+
+Windows PowerShell:
+
+```powershell
+Copy-Item backend/.env.example backend/.env
+Copy-Item frontend/.env.example frontend/.env.local
+```
+
+macOS/Linux:
+
+```bash
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env.local
+```
+
+Keep `REQUIRE_AUTH=false` for demo mode.
+
+### 2. Start the backend
+
+Windows PowerShell:
+
+```powershell
+cd backend
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+uvicorn app.main:app --reload --port 8000
+```
+
+macOS/Linux:
+
+```bash
+cd backend
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+uvicorn app.main:app --reload --port 8000
+```
+
+### 3. Start the frontend
+
+Open another terminal from the repository root:
+
+```bash
+cd frontend
+pnpm install
+pnpm dev
+```
+
+Open:
+
+- Storefront: `http://localhost:3000`
+- API documentation: `http://localhost:8000/docs`
+- Backend health check: `http://localhost:8000/health`
+
+## Full Supabase and OpenAI setup
+
+### 1. Create a Supabase project
+
+Create a project in Supabase, then collect these values from the project settings:
+
+- Project URL
+- Publishable key, formerly called the anonymous key
+- Service-role key
+
+The service-role key is a private backend secret. Never expose it through a `NEXT_PUBLIC_*` variable or commit it to Git.
+
+### 2. Create the database schema
+
+Open Supabase Dashboard -> SQL Editor. Run every SQL file in `backend/database/migrations` in numeric order:
+
+```text
+001_initial_schema.sql
+002_phase2_memory.sql
+003_user_profile_trigger.sql
+004_supabase_pgvector.sql
+005_order_checkout.sql
+006_support_and_returns.sql
+007_phase4_analytics.sql
+008_product_catalogue_source.sql
+009_observability_indexes.sql
+```
+
+These migrations enable pgvector, create the application tables, configure row-level security, and install the semantic-search function.
+
+### 3. Configure backend variables
+
+Edit `backend/.env`:
+
+```dotenv
+ENVIRONMENT=development
+FRONTEND_URL=http://localhost:3000
+REQUIRE_AUTH=true
+SUPABASE_URL=https://YOUR_PROJECT.supabase.co
+SUPABASE_JWT_SECRET=
+SUPABASE_SERVICE_ROLE_KEY=YOUR_PRIVATE_SERVICE_ROLE_KEY
+OPENAI_API_KEY=YOUR_OPENAI_API_KEY
+OPENAI_MODEL=gpt-5.6-sol
+EMBEDDING_MODEL=text-embedding-3-small
+MEMORY_DATABASE_PATH=commerce_ai.db
+PRODUCT_API_URL=https://dummyjson.com/products?limit=0
+```
+
+`SUPABASE_JWT_SECRET` is only required for legacy HS256 Supabase projects. Newer projects use the public JWKS endpoint automatically.
+
+### 4. Configure frontend variables
+
+Edit `frontend/.env.local`:
+
+```dotenv
+NEXT_PUBLIC_API_URL=http://localhost:8000
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=YOUR_PUBLIC_PUBLISHABLE_KEY
+```
+
+Only public browser-safe values belong in this file.
+
+### 5. Configure Supabase Auth
+
+In Supabase Dashboard -> Authentication -> URL Configuration:
+
+- Set Site URL to `http://localhost:3000`
+- Add `http://localhost:3000/auth/callback` to Redirect URLs
+- Add the deployed callback URL before production deployment
+
+Enable your preferred email authentication provider. If email confirmation is enabled, users must confirm their email before a session is created.
+
+### 6. Import the product catalogue
+
+After applying the database migrations, run from the `backend` directory:
+
+```bash
+python -m database.seed_dummyjson_products
+```
+
+The importer is idempotent and can be run again safely. ACE reads Supabase products first, then uses DummyJSON and the bundled catalogue as fallbacks.
+
+Product embeddings are generated automatically on the first semantic-search request when both the service-role key and OpenAI key are configured.
+
+## Environment variable reference
+
+### Backend
+
+| Variable | Required | Purpose |
+| --- | --- | --- |
+| `FRONTEND_URL` | Yes | Allowed frontend origin for CORS |
+| `REQUIRE_AUTH` | No | Enables Supabase JWT enforcement |
+| `SUPABASE_URL` | Full mode | Supabase project URL |
+| `SUPABASE_SERVICE_ROLE_KEY` | Full mode | Private database access key |
+| `SUPABASE_JWT_SECRET` | Legacy only | HS256 JWT verification |
+| `OPENAI_API_KEY` | AI mode | OpenAI Responses and embedding APIs |
+| `OPENAI_MODEL` | No | Chat and agent model |
+| `EMBEDDING_MODEL` | No | Vector embedding model |
+| `MEMORY_DATABASE_PATH` | No | Local SQLite path; use `:memory:` for tests |
+| `PRODUCT_API_URL` | No | External fallback catalogue URL |
+
+### Frontend
+
+| Variable | Required | Purpose |
+| --- | --- | --- |
+| `NEXT_PUBLIC_API_URL` | Yes | FastAPI base URL |
+| `NEXT_PUBLIC_SITE_URL` | Production | Canonical SEO, sitemap, and robots URL |
+| `NEXT_PUBLIC_SUPABASE_URL` | Full mode | Public Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Full mode | Public browser authentication key |
+
+## Testing
+
+Backend:
+
+```bash
+cd backend
+pytest -q
+```
+
+Frontend:
+
+```bash
+cd frontend
+pnpm typecheck
+pnpm build
+```
+
+## Production deployment
+
+### Frontend on Vercel
+
+1. Import the repository into Vercel.
+2. Set Root Directory to `frontend`.
+3. Add all required frontend environment variables.
+4. Set `NEXT_PUBLIC_API_URL` to the deployed backend URL.
+5. Set `NEXT_PUBLIC_SITE_URL` to the final Vercel or custom domain.
+
+### Backend on Koyeb
+
+1. Create a web service from the repository.
+2. Set the service root to `backend` and use its Dockerfile.
+3. Add the backend environment variables.
+4. Set `FRONTEND_URL` to the deployed frontend origin.
+5. Set `REQUIRE_AUTH=true`.
+
+Update Supabase Auth URLs with the production domain after both services are deployed.
+
+## Troubleshooting
+
+### `Missing bearer token` or `Invalid or expired token`
+
+- Verify both frontend Supabase variables.
+- Restart Next.js after changing `.env.local`.
+- Confirm the Supabase project URL matches the backend configuration.
+- Sign out and sign in again to refresh the browser session.
+- Keep `REQUIRE_AUTH=false` only when intentionally using demo mode.
+
+### Products load slowly or do not appear
+
+- Confirm FastAPI is running on port 8000.
+- Open `http://localhost:8000/health`.
+- Import products into Supabase to avoid relying on the external fallback API.
+- Verify `NEXT_PUBLIC_API_URL` and backend CORS `FRONTEND_URL`.
+
+### Windows `.next/trace` `EPERM` error
+
+Stop all running Next.js development processes before running a production build. Then remove the generated `frontend/.next` directory and run `pnpm build` again.
+
+### PowerShell blocks virtual-environment activation
+
+Use the interpreter directly without activating:
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest -q
+.\.venv\Scripts\python.exe -m uvicorn app.main:app --reload --port 8000
+```
+
+## API overview
+
+The interactive OpenAPI specification is available at `/docs` while FastAPI is running.
+
+Important routes include:
+
+- `POST /chat`
+- `POST /search`
+- `POST /search/semantic`
+- `POST /search/visual`
+- `POST /recommend`
+- `POST /compare`
+- `GET /products`
+- `POST /orders`
+- `GET /orders`
+- `POST /orders/track`
+- `POST /returns`
+- `GET /conversations`
+- `GET /analytics`
+- `POST /feedback`
 
 ## Documentation
 
@@ -54,83 +343,13 @@ AI agents receive products and business records from repositories. They never in
 - [Deployment guide](docs/deployment.md)
 - [Roadmap](docs/roadmap.md)
 
-## Run locally
+## Security before publishing
 
-Requirements: Node.js 22+, pnpm 11+, and Python 3.12+.
+- Never commit `.env`, `.env.local`, private keys, database files, or API credentials.
+- Supabase publishable keys are designed for browser use, but database security must still be enforced through row-level security.
+- Rotate any private credential that was ever committed, even if it was later deleted.
+- Keep OpenAI and Supabase service-role keys on the backend only.
 
-```powershell
-Copy-Item backend/.env.example backend/.env
-Copy-Item frontend/.env.example frontend/.env.local
+## Author
 
-cd backend
-python -m venv .venv
-.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-uvicorn app.main:app --reload
-```
-
-In another terminal:
-
-```powershell
-cd frontend
-pnpm install
-pnpm dev
-```
-
-Open `http://localhost:3000`. The API documentation is at `http://localhost:8000/docs`.
-
-## Configure services
-
-The application works in demo mode without secrets. To enable production integrations:
-
-1. Create a Supabase project and enable email authentication.
-2. Copy the project URL and publishable key into `frontend/.env.local`.
-3. Copy the project URL into `backend/.env` and set `REQUIRE_AUTH=true`.
-4. Set `SUPABASE_JWT_SECRET` for legacy HS256 projects; newer asymmetric projects use the project's JWKS endpoint automatically.
-5. Add `OPENAI_API_KEY` to `backend/.env`. `OPENAI_MODEL` is configurable and defaults to `gpt-5.6-sol`.
-6. Apply the SQL files under `backend/database/migrations` in order. This enables pgvector and installs the protected similarity-search function.
-7. Add `SUPABASE_SERVICE_ROLE_KEY` to the backend only. With it and `OPENAI_API_KEY`, product embeddings are indexed into Supabase automatically on the first semantic request; otherwise local vectors and SQLite memory are used.
-
-`EMBEDDING_MODEL` defaults to `text-embedding-3-small`. Without backend Supabase and OpenAI credentials, search uses local deterministic vectors and requires no API calls. `MEMORY_DATABASE_PATH` defaults to `commerce_ai.db` in the example environment; use `:memory:` for ephemeral tests.
-
-`PRODUCT_API_URL` defaults to `https://dummyjson.com/products?limit=0`. Run `python -m database.seed_dummyjson_products` from `backend` after applying migrations to idempotently import the catalogue into Supabase. ACE reads database products first, then uses the remote API and bundled catalogue as fallbacks.
-
-Never expose `OPENAI_API_KEY` or the Supabase service-role key to the frontend.
-
-## API
-
-- `POST /chat`
-- `POST /search`
-- `POST /search/semantic`
-- `POST /search/visual`
-- `POST /recommend`
-- `POST /compare`
-- `GET /faqs`
-- `POST /support`
-- `GET /products`
-- `POST /orders`
-- `GET /orders`
-- `GET /orders/{id}`
-- `POST /orders/track`
-- `POST /returns`
-- `GET /analytics`
-- `POST /feedback`
-- `GET /conversations`
-- `GET /conversations/{conversation_id}`
-- `GET /health`
-- `GET /api/v1/me`
-
-The original versioned Phase 1 routes remain available under `/api/v1`. Agent implementations live in `backend/app/agents`; Supabase migrations are in `backend/database/migrations`.
-
-Example request:
-
-```json
-{ "message": "I need a gaming laptop under $1200" }
-```
-
-## Verification
-
-```powershell
-cd backend; pytest
-cd ../frontend; pnpm typecheck; pnpm build
-```
+Built by [Gulshan](https://gulashan.vercel.app/).

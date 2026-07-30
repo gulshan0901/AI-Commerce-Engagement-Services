@@ -13,13 +13,15 @@ export const theme = createTheme({
   typography: {
     fontFamily: "Inter, Segoe UI, Arial, sans-serif",
     h1: { fontWeight: 800, letterSpacing: "-0.04em" },
-    h2: { fontWeight: 750, letterSpacing: "-0.03em" },
+    h2: { fontWeight: 750, letterSpacing: "-0.03em", "@media (max-width:600px)": { fontSize: "2.25rem", lineHeight: 1.12 } },
+    h3: { "@media (max-width:600px)": { fontSize: "1.9rem", lineHeight: 1.18 } },
+    h4: { "@media (max-width:600px)": { fontSize: "1.6rem", lineHeight: 1.2 } },
     button: { textTransform: "none", fontWeight: 700 },
   },
   components: {
     MuiCssBaseline: { styleOverrides: {
       html: { scrollBehavior: "smooth" },
-      body: { textRendering: "optimizeLegibility" },
+      body: { textRendering: "optimizeLegibility", overflowX: "clip" },
       "*:focus-visible": { outline: "3px solid #4de2c5", outlineOffset: "3px" },
       ".sr-only": { position: "absolute", width: "1px", height: "1px", padding: 0, margin: "-1px", overflow: "hidden", clip: "rect(0, 0, 0, 0)", whiteSpace: "nowrap", border: 0 },
       "@media (prefers-reduced-motion: reduce)": { html: { scrollBehavior: "auto" }, "*, *::before, *::after": { animationDuration: "0.01ms !important", animationIterationCount: "1 !important", transitionDuration: "0.01ms !important" } },

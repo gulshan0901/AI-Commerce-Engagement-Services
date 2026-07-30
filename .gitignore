@@ -7,6 +7,8 @@ frontend/.next/
 backend/.venv/
 backend/__pycache__/
 backend/.pytest_cache/
+backend/commerce_ai.db
+backend/*.db-journal
 *.pyc
 /.pnp
 .pnp.js
