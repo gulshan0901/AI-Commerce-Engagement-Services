@@ -22,6 +22,20 @@ def test_health() -> None:
     assert client.get("/health").json() == {"status": "ok"}
 
 
+def test_production_frontend_cors_preflight() -> None:
+    response = client.options(
+        "/products",
+        headers={
+            "Origin": "https://ai-comm-engagement.vercel.app",
+            "Access-Control-Request-Method": "GET",
+            "Access-Control-Request-Headers": "x-guest-id",
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.headers["access-control-allow-origin"] == "https://ai-comm-engagement.vercel.app"
+
+
 def test_catalogue_search_and_price_filter() -> None:
     response = client.get("/api/v1/products", params={"query": "gaming", "max_price": 1200})
     assert response.status_code == 200

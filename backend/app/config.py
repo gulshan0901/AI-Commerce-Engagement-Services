@@ -18,6 +18,16 @@ class Settings(BaseSettings):
     memory_database_path: str = ":memory:"
     product_api_url: str = "https://dummyjson.com/products?limit=0"
 
+    @property
+    def frontend_origins(self) -> list[str]:
+        """Return normalized local, production, and environment-provided origins."""
+        configured = (origin.strip().rstrip("/") for origin in self.frontend_url.split(","))
+        return list(dict.fromkeys([
+            "http://localhost:3000",
+            "https://ai-comm-engagement.vercel.app",
+            *(origin for origin in configured if origin),
+        ]))
+
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 
