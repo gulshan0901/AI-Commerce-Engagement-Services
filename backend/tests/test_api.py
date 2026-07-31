@@ -76,6 +76,17 @@ def test_chat_recommends_explainable_products_without_api_key() -> None:
     assert all(item["product"]["price"] <= 1200 for item in payload["recommendations"])
 
 
+def test_order_agent_requires_explicit_purchase_and_respects_budget() -> None:
+    recommendation = client.post("/chat", json={"message": "best gaming laptop under $1200"}).json()
+    assert recommendation["intent"] == "shopping"
+    assert recommendation["order_proposal"] is None
+
+    purchase = client.post("/chat", json={"message": "order the best gaming laptop under $1200"}).json()
+    assert purchase["intent"] == "purchase"
+    assert purchase["order_proposal"]["in_stock"] is True
+    assert purchase["order_proposal"]["price"] <= 1200
+
+
 def test_search_and_recommend_contract_routes() -> None:
     search = client.post("/search", json={"query": "running", "max_price": 140})
     assert search.status_code == 200

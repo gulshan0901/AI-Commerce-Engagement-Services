@@ -13,6 +13,8 @@ class IntentAgent:
         rules = [
             ("return", r"\b(return|refund)\s+(?:my\s+)?order\b"),
             ("order_tracking", r"\b(track|tracking|where is|order status)\b"),
+            # Purchasing is intentionally explicit; ordinary recommendations never create a proposal.
+            ("purchase", r"\b(?:buy|purchase|order)\b"),
             ("comparison", r"\b(compare|versus|vs\.?|difference between)\b"),
             ("support", r"\b(policy|shipping|delivery|faq|warranty|help|return|refund)\b"),
         ]

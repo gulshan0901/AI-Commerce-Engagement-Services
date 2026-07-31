@@ -79,7 +79,15 @@ class Orchestrator:
         response = await self.shopping.run(
             contextual_request, settings, retrieval.items, history, profile
         )
-        response.intent = "shopping"
+        response.intent = intent.intent if intent.intent == "purchase" else "shopping"
+        if intent.intent == "purchase" and response.recommendations:
+            candidate = response.recommendations[0].product
+            if candidate.in_stock and (search_request.max_price is None or candidate.price <= search_request.max_price):
+                response.order_proposal = candidate
+                response.answer += (
+                    f" I prepared {candidate.name} at ${candidate.price:,.2f} for your review because it "
+                    "matches the stated request. Confirm the item and delivery details before placing the order."
+                )
         return await self._finish(conversation_id, response)
 
     async def _finish(self, conversation_id: str, response: ChatResponse) -> ChatResponse:

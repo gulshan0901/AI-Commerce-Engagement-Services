@@ -23,7 +23,8 @@ export type ChatResponse = {
   recommendations: Recommendation[];
   source: "openai" | "fallback";
   memory_used: boolean;
-  intent: "shopping" | "comparison" | "support" | "order_tracking" | "return";
+  intent: "shopping" | "purchase" | "comparison" | "support" | "order_tracking" | "return";
+  order_proposal?: Product | null;
 };
 
 export type ConversationSummary = {

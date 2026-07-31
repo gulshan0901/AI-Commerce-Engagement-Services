@@ -53,7 +53,8 @@ class ChatResponse(BaseModel):
     recommendations: list[Recommendation]
     source: Literal["openai", "fallback"]
     memory_used: bool = False
-    intent: Literal["shopping", "comparison", "support", "order_tracking", "return"] = "shopping"
+    intent: Literal["shopping", "purchase", "comparison", "support", "order_tracking", "return"] = "shopping"
+    order_proposal: Product | None = None
 
 
 class User(BaseModel):
@@ -187,7 +188,7 @@ class ReturnResponse(BaseModel):
 
 
 class IntentResult(BaseModel):
-    intent: Literal["shopping", "comparison", "support", "order_tracking", "return"]
+    intent: Literal["shopping", "purchase", "comparison", "support", "order_tracking", "return"]
     confidence: float = Field(ge=0, le=1)
 
 
