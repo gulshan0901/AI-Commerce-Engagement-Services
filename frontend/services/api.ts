@@ -7,10 +7,19 @@ import { createSupabaseClient } from "@/services/supabase";
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 const catalogueCache = new Map<string, { expires: number; value: unknown }>();
 
+function getGuestId() {
+  if (typeof window === "undefined") return "server";
+  const existing = window.localStorage.getItem("ace_guest_id");
+  if (existing) return existing;
+  const created = window.crypto.randomUUID();
+  window.localStorage.setItem("ace_guest_id", created);
+  return created;
+}
+
 async function request<T>(path: string, init?: RequestInit, token?: string, retrySession = true): Promise<T> {
   const response = await fetch(`${API_URL}${path}`, {
     ...init,
-    headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}), ...init?.headers },
+    headers: { "Content-Type": "application/json", "X-Guest-ID": getGuestId(), ...(token ? { Authorization: `Bearer ${token}` } : {}), ...init?.headers },
   });
   if (response.status === 401 && token && retrySession) {
     const supabase = createSupabaseClient();

@@ -9,7 +9,6 @@ class Settings(BaseSettings):
     app_name: str = "Commerce AI API"
     environment: str = "development"
     frontend_url: str = "http://localhost:3000"
-    require_auth: bool = False
     supabase_url: str | None = None
     supabase_jwt_secret: str | None = None
     supabase_service_role_key: str | None = None

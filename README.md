@@ -13,7 +13,7 @@ Emma uses specialized agents for product discovery, comparisons, recommendations
 | AI | OpenAI Responses API |
 | Database | Supabase PostgreSQL |
 | Vector search | Supabase pgvector |
-| Authentication | Supabase Auth |
+| Guest identity | Browser-scoped anonymous access |
 | Product source | Supabase with DummyJSON and bundled fallbacks |
 | Deployment | Vercel and Koyeb |
 | CI | GitHub Actions |
@@ -23,7 +23,7 @@ Emma uses specialized agents for product discovery, comparisons, recommendations
 - Responsive product catalogue, categories, search, details, cart, checkout, and orders
 - Text, voice, and image-based AI shopping assistance
 - Explainable product recommendations and product comparison
-- Supabase authentication and user-scoped data
+- Account-free access with browser-scoped guest data
 - Database-backed orders, tracking, returns, feedback, and chat history
 - Retrieval-augmented generation with pgvector semantic search
 - Customer preference memory
@@ -93,7 +93,7 @@ cp backend/.env.example backend/.env
 cp frontend/.env.example frontend/.env.local
 ```
 
-Keep `REQUIRE_AUTH=false` for demo mode.
+No login or account setup is required.
 
 ### 2. Start the backend
 
@@ -172,7 +172,6 @@ Edit `backend/.env`:
 ```dotenv
 ENVIRONMENT=development
 FRONTEND_URL=http://localhost:3000
-REQUIRE_AUTH=true
 SUPABASE_URL=https://YOUR_PROJECT.supabase.co
 SUPABASE_JWT_SECRET=
 SUPABASE_SERVICE_ROLE_KEY=YOUR_PRIVATE_SERVICE_ROLE_KEY
@@ -198,17 +197,7 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=YOUR_PUBLIC_PUBLISHABLE_KEY
 
 Only public browser-safe values belong in this file.
 
-### 5. Configure Supabase Auth
-
-In Supabase Dashboard -> Authentication -> URL Configuration:
-
-- Set Site URL to `http://localhost:3000`
-- Add `http://localhost:3000/auth/callback` to Redirect URLs
-- Add the deployed callback URL before production deployment
-
-Enable your preferred email authentication provider. If email confirmation is enabled, users must confirm their email before a session is created.
-
-### 6. Import the product catalogue
+### 5. Import the product catalogue
 
 After applying the database migrations, run from the `backend` directory:
 
@@ -227,7 +216,6 @@ Product embeddings are generated automatically on the first semantic-search requ
 | Variable | Required | Purpose |
 | --- | --- | --- |
 | `FRONTEND_URL` | Yes | Allowed frontend origin for CORS |
-| `REQUIRE_AUTH` | No | Enables Supabase JWT enforcement |
 | `SUPABASE_URL` | Full mode | Supabase project URL |
 | `SUPABASE_SERVICE_ROLE_KEY` | Full mode | Private database access key |
 | `SUPABASE_JWT_SECRET` | Legacy only | HS256 JWT verification |
@@ -279,19 +267,9 @@ pnpm build
 2. Set the service root to `backend` and use its Dockerfile.
 3. Add the backend environment variables.
 4. Set `FRONTEND_URL` to the deployed frontend origin.
-5. Set `REQUIRE_AUTH=true`.
-
-Update Supabase Auth URLs with the production domain after both services are deployed.
+5. Verify `/health`, then connect the public backend URL to Vercel.
 
 ## Troubleshooting
-
-### `Missing bearer token` or `Invalid or expired token`
-
-- Verify both frontend Supabase variables.
-- Restart Next.js after changing `.env.local`.
-- Confirm the Supabase project URL matches the backend configuration.
-- Sign out and sign in again to refresh the browser session.
-- Keep `REQUIRE_AUTH=false` only when intentionally using demo mode.
 
 ### Products load slowly or do not appear
 

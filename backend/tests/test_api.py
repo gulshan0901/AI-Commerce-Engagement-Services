@@ -5,7 +5,6 @@ from unittest.mock import AsyncMock
 import httpx
 from fastapi.testclient import TestClient
 
-os.environ["REQUIRE_AUTH"] = "false"
 os.environ["MEMORY_DATABASE_PATH"] = ":memory:"
 os.environ["SUPABASE_SERVICE_ROLE_KEY"] = ""
 os.environ["OPENAI_API_KEY"] = ""
