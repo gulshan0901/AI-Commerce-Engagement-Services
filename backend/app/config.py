@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     supabase_url: str | None = None
     supabase_jwt_secret: str | None = None
     supabase_service_role_key: str | None = None
+    use_supabase_persistence: bool = False
     openai_api_key: str | None = None
     openai_model: str = "gpt-5.6-sol"
     embedding_model: str = "text-embedding-3-small"

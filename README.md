@@ -216,6 +216,7 @@ Product embeddings are generated automatically on the first semantic-search requ
 | Variable | Required | Purpose |
 | --- | --- | --- |
 | `FRONTEND_URL` | Yes | Comma-separated frontend origins allowed by CORS |
+| `USE_SUPABASE_PERSISTENCE` | No | Keep `false` for account-free guest mode |
 | `SUPABASE_URL` | Full mode | Supabase project URL |
 | `SUPABASE_SERVICE_ROLE_KEY` | Full mode | Private database access key |
 | `SUPABASE_JWT_SECRET` | Legacy only | HS256 JWT verification |

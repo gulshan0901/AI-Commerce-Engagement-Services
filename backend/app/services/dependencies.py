@@ -12,7 +12,7 @@ from .analytics import LocalAnalyticsStore, SupabaseAnalyticsStore
 @lru_cache
 def get_memory_store() -> MemoryStore | SupabaseMemoryStore:
     settings = get_settings()
-    if settings.supabase_url and settings.supabase_service_role_key:
+    if settings.use_supabase_persistence and settings.supabase_url and settings.supabase_service_role_key:
         return SupabaseMemoryStore(settings.supabase_url, settings.supabase_service_role_key)
     return MemoryStore(settings.memory_database_path)
 
@@ -30,6 +30,6 @@ def get_order_store() -> LocalOrderStore | SupabaseOrderStore:
 @lru_cache
 def get_analytics_store() -> LocalAnalyticsStore | SupabaseAnalyticsStore:
     settings = get_settings()
-    if settings.supabase_url and settings.supabase_service_role_key:
+    if settings.use_supabase_persistence and settings.supabase_url and settings.supabase_service_role_key:
         return SupabaseAnalyticsStore(settings.supabase_url, settings.supabase_service_role_key)
     return LocalAnalyticsStore(settings.memory_database_path)

@@ -127,6 +127,6 @@ class SupabaseOrderStore:
 
 
 def build_order_store(settings: Settings) -> LocalOrderStore | SupabaseOrderStore:
-    if settings.supabase_url and settings.supabase_service_role_key:
+    if settings.use_supabase_persistence and settings.supabase_url and settings.supabase_service_role_key:
         return SupabaseOrderStore(settings.supabase_url, settings.supabase_service_role_key)
     return LocalOrderStore()
