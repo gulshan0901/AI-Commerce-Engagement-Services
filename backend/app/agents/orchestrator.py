@@ -4,7 +4,7 @@ import re
 
 from ..config import Settings
 from ..models import ChatRequest, ChatResponse, SearchRequest
-from ..models import CompareRequest, Recommendation, SupportRequest
+from ..models import CompareRequest, Product, Recommendation, SupportRequest
 from ..catalogue import all_products
 from ..services.dependencies import get_memory_store, get_order_store, get_retrieval_service
 from .comparison_agent import ComparisonAgent
@@ -31,6 +31,20 @@ class Orchestrator:
         conversation_id, history, profile = await self.memory.prepare(
             user_id, request.conversation_id, request.message
         )
+        if self._is_confirmation(request.message):
+            pending_product = self._pending_order_product(history)
+            if pending_product:
+                return await self._finish(conversation_id, ChatResponse(
+                    conversation_id=conversation_id,
+                    answer=(f"Confirmed. {pending_product.name} at ${pending_product.price:,.2f} is ready "
+                            "for checkout. Please verify your delivery details to place the order."),
+                    recommendations=[Recommendation(
+                        product=pending_product,
+                        reasons=["Previously selected as the best exact match", "Explicitly confirmed by you"],
+                    )],
+                    order_proposal=pending_product,
+                    source="fallback", memory_used=True, intent="purchase",
+                ))
         intent = self.intent.detect(request.message)
         if intent.intent == "support":
             support = self.support.run(SupportRequest(question=request.message))
@@ -84,9 +98,12 @@ class Orchestrator:
             candidate = response.recommendations[0].product
             if candidate.in_stock and (search_request.max_price is None or candidate.price <= search_request.max_price):
                 response.order_proposal = candidate
-                response.answer += (
-                    f" I prepared {candidate.name} at ${candidate.price:,.2f} for your review because it "
-                    "matches the stated request. Confirm the item and delivery details before placing the order."
+                reasons = response.recommendations[0].reasons[:2]
+                reason_text = f" It was selected because {' and '.join(reason.lower() for reason in reasons)}." if reasons else ""
+                response.answer = (
+                    f"I found an exact in-stock match: {candidate.name} at ${candidate.price:,.2f}."
+                    f"{reason_text} I’ve prepared one unit for review. Confirm the product and delivery "
+                    "details on checkout before the order is placed."
                 )
         return await self._finish(conversation_id, response)
 
@@ -112,3 +129,14 @@ class Orchestrator:
     def _order_id(message: str) -> str | None:
         match = re.search(r"\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b", message, re.I)
         return match.group(0) if match else None
+
+    @staticmethod
+    def _is_confirmation(message: str) -> bool:
+        return bool(re.fullmatch(r"\s*(?:yes|yes please|confirm|confirmed|proceed|place (?:it|the order))\s*[.!]?\s*", message, re.I))
+
+    @staticmethod
+    def _pending_order_product(history: list) -> Product | None:
+        last_assistant = next((message for message in reversed(history) if message.role == "assistant"), None)
+        if not last_assistant or "prepared one unit" not in last_assistant.content.lower():
+            return None
+        return next((product for product in all_products() if product.name.lower() in last_assistant.content.lower()), None)

@@ -14,7 +14,7 @@ import VolumeUpRoundedIcon from "@mui/icons-material/VolumeUpRounded";
 import { Alert, Avatar, Badge, Box, Button, Chip, CircularProgress, Fab, IconButton, Paper, Rating, Stack, TextField, Tooltip, Typography } from "@mui/material";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react";
 import { sendChat, visualSearch } from "@/services/api";
 import { useCart } from "@/features/cart/CartProvider";
@@ -27,7 +27,8 @@ type RecognitionConstructor = new () => Recognition;
 
 export function ChatWidget() {
   const pathname = usePathname();
-  const { add } = useCart();
+  const router = useRouter();
+  const { add, lines, setQuantity } = useCart();
   const uploadRef = useRef<HTMLInputElement>(null);
   const recognitionRef = useRef<Recognition | undefined>(undefined);
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
@@ -63,11 +64,22 @@ export function ChatWidget() {
       setConversationId(result.conversation_id);
       setMessages((current) => [...current, { role: "assistant", content: result.answer, recommendations: result.recommendations, orderProposal: result.order_proposal, query: message }]);
       if (voiceReply) speak(result.answer);
+      if (/^\s*(yes|yes please|confirm|confirmed|proceed|place (it|the order))[.!]?\s*$/i.test(message) && result.order_proposal) {
+        window.setTimeout(() => reviewOrder(result.order_proposal!), 500);
+      }
     } catch (caught) { setError(caught instanceof Error ? caught.message : "The assistant is unavailable"); }
     finally { setLoading(false); }
   }
 
   async function submit(event: FormEvent) { event.preventDefault(); await ask(input); }
+
+  function reviewOrder(product: Product) {
+    if (lines.some((line) => line.product.id === product.id)) setQuantity(product.id, 1);
+    else add(product);
+    setOpen(false);
+    // Navigate after React commits the exact cart line so checkout never opens empty.
+    window.requestAnimationFrame(() => router.push("/checkout"));
+  }
 
   function toggleListening() {
     if (listening) { recognitionRef.current?.stop(); return; }
@@ -116,7 +128,7 @@ export function ChatWidget() {
       <Stack ref={messagesContainerRef} spacing={1.5} sx={{ p: 1.5, flexGrow: 1, minHeight: 0, overflowY: "auto", overscrollBehavior: "contain", background: "radial-gradient(circle at 50% 0%, rgba(124,108,255,.08), transparent 38%)" }}>{messages.map((message, index) => <Stack key={`${message.role}-${index}`} spacing={1} sx={{ width: message.recommendations?.length ? "100%" : "auto", maxWidth: message.recommendations?.length ? "100%" : "88%", alignSelf: message.role === "user" ? "flex-end" : "flex-start" }}>
         {message.imageUrl && <Box component="img" src={message.imageUrl} alt="Uploaded product" sx={{ width: 150, height: 110, objectFit: "cover", borderRadius: 2, alignSelf: "flex-end" }} />}
         <Paper variant="outlined" sx={{ p: 1.35, alignSelf: message.role === "user" ? "flex-end" : "flex-start", bgcolor: message.role === "user" ? "primary.main" : "rgba(21,25,38,.96)", borderColor: message.role === "user" ? "primary.main" : "rgba(255,255,255,.1)", borderRadius: message.role === "user" ? "18px 18px 4px 18px" : "18px 18px 18px 4px", whiteSpace: "pre-line", boxShadow: "0 8px 24px rgba(0,0,0,.16)" }}><Stack direction="row" spacing={0.75} alignItems="start"><Typography variant="body2" lineHeight={1.55}>{message.content}</Typography>{message.role === "assistant" && <IconButton size="small" aria-label="Read response aloud" onClick={() => speak(message.content)} sx={{ mt: -0.5, mr: -0.75 }}><VolumeUpRoundedIcon fontSize="small" /></IconButton>}</Stack></Paper>
-        {message.orderProposal && <Paper variant="outlined" sx={{ p: 1.25, borderColor: "secondary.main", bgcolor: "rgba(77,226,197,.07)" }}><Typography variant="caption" color="secondary.main" fontWeight={800}>ORDER AGENT · READY FOR REVIEW</Typography><Typography fontWeight={900}>{message.orderProposal.name}</Typography><Typography variant="body2" color="text.secondary">${message.orderProposal.price.toLocaleString()} · In stock · Quantity 1</Typography><Button component={Link} href="/checkout" variant="contained" fullWidth sx={{ mt: 1 }} startIcon={<AddShoppingCartRoundedIcon />} onClick={() => add(message.orderProposal!)}>Review and confirm</Button></Paper>}
+        {message.orderProposal && <Paper variant="outlined" sx={{ p: 1.25, borderColor: "secondary.main", bgcolor: "rgba(77,226,197,.07)" }}><Typography variant="caption" color="secondary.main" fontWeight={800}>ORDER AGENT · READY FOR REVIEW</Typography><Typography fontWeight={900}>{message.orderProposal.name}</Typography><Typography variant="body2" color="text.secondary">${message.orderProposal.price.toLocaleString()} · In stock · Quantity 1</Typography><Button variant="contained" fullWidth sx={{ mt: 1 }} startIcon={<AddShoppingCartRoundedIcon />} onClick={() => reviewOrder(message.orderProposal!)}>Review and confirm</Button></Paper>}
         {message.recommendations?.length ? <Button component={Link} href={`/search?q=${encodeURIComponent(message.query ?? "")}&ids=${message.recommendations.map((item) => encodeURIComponent(item.product.id)).join(",")}`} size="small" variant="text" sx={{ alignSelf: "flex-start" }}>View all suggestions →</Button> : null}
         {message.recommendations?.map(({ product, reasons }) => <Paper key={product.id} variant="outlined" sx={{ overflow: "hidden", bgcolor: "background.default" }}><Stack component={Link} href={`/search?q=${encodeURIComponent(message.query ?? product.name)}&ids=${message.recommendations?.map((item) => encodeURIComponent(item.product.id)).join(",")}`} direction="row" sx={{ color: "inherit", textDecoration: "none", "&:hover": { bgcolor: "rgba(124,108,255,.07)" } }}><Box sx={{ width: 104, minHeight: 112, position: "relative", flexShrink: 0 }}><Image src={product.image_url} alt={product.name} fill sizes="104px" style={{ objectFit: "cover" }} /></Box><Stack spacing={0.5} sx={{ p: 1.25, minWidth: 0, flexGrow: 1 }}><Stack direction="row" justifyContent="space-between" gap={1}><Box minWidth={0}><Typography variant="caption" color="secondary.main">{product.brand}</Typography><Typography fontWeight={800} noWrap>{product.name}</Typography></Box><Typography fontWeight={850}>${product.price.toLocaleString()}</Typography></Stack><Stack direction="row" spacing={0.75} alignItems="center"><Rating value={product.rating} precision={0.1} size="small" readOnly /><Typography variant="caption">{product.rating}</Typography></Stack><Stack direction="row" gap={0.5} flexWrap="wrap">{reasons.slice(0, 2).map((reason) => <Chip key={reason} label={reason} size="small" sx={{ maxWidth: "100%" }} />)}</Stack></Stack></Stack><Stack direction="row" spacing={1} sx={{ p: 1 }}><Button component={Link} href={`/products/${product.id}`} size="small" variant="outlined" fullWidth>Details</Button><Button size="small" variant="contained" fullWidth disabled={!product.in_stock} startIcon={<AddShoppingCartRoundedIcon />} onClick={() => add(product)}>{product.in_stock ? "Add" : "Out of stock"}</Button></Stack></Paper>)}
       </Stack>)}{loading && <Stack direction="row" spacing={1} alignItems="center"><CircularProgress size={16} /><Typography variant="caption" color="text.secondary">Emma is thinking…</Typography></Stack>}{error && <Alert severity="error">{error}</Alert>}</Stack>

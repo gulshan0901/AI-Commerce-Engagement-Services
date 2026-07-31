@@ -85,6 +85,22 @@ def test_order_agent_requires_explicit_purchase_and_respects_budget() -> None:
     assert purchase["intent"] == "purchase"
     assert purchase["order_proposal"]["in_stock"] is True
     assert purchase["order_proposal"]["price"] <= 1200
+    assert "cannot place" not in purchase["answer"].lower()
+    assert "prepared one unit" in purchase["answer"].lower()
+
+    confirmation = client.post(
+        "/chat",
+        headers={"X-Guest-ID": "order-confirmation-test"},
+        json={"message": "order the best gaming laptop under $1200"},
+    ).json()
+    confirmed = client.post(
+        "/chat",
+        headers={"X-Guest-ID": "order-confirmation-test"},
+        json={"message": "confirmed", "conversation_id": confirmation["conversation_id"]},
+    ).json()
+    assert confirmed["intent"] == "purchase"
+    assert confirmed["order_proposal"]["id"] == confirmation["order_proposal"]["id"]
+    assert "ready for checkout" in confirmed["answer"].lower()
 
 
 def test_search_and_recommend_contract_routes() -> None:

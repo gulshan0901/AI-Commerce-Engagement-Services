@@ -11,8 +11,10 @@ import VolumeUpRoundedIcon from "@mui/icons-material/VolumeUpRounded";
 import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
 import { Alert, Avatar, Box, Button, Chip, CircularProgress, Grid, IconButton, Paper, Rating, Stack, TextField, Tooltip, Typography } from "@mui/material";
 import { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { sendChat, submitFeedback, visualSearch } from "@/services/api";
 import { ChatResponse, ConversationDetail } from "@/types";
+import { useCart } from "@/features/cart/CartProvider";
 import { ProductCard } from "./ProductCard";
 
 type RecognitionResultEvent = { results: ArrayLike<{ 0: { transcript: string } }> };
@@ -26,6 +28,8 @@ export function ShoppingAssistant({
   selectedConversation?: ConversationDetail;
   onConversationChanged: (id: string) => void;
 }) {
+  const router = useRouter();
+  const { add, lines, setQuantity } = useCart();
   const [input, setInput] = useState("");
   const [result, setResult] = useState<ChatResponse>();
   const [loading, setLoading] = useState(false);
@@ -58,6 +62,11 @@ export function ShoppingAssistant({
       setResult(response); setConversationId(response.conversation_id);
       onConversationChanged(response.conversation_id);
       if (voiceReply) speak(response.answer);
+      if (/^\s*(yes|yes please|confirm|confirmed|proceed|place (it|the order))[.!]?\s*$/i.test(message) && response.order_proposal) {
+        if (lines.some((line) => line.product.id === response.order_proposal!.id)) setQuantity(response.order_proposal.id, 1);
+        else add(response.order_proposal);
+        window.requestAnimationFrame(() => router.push("/checkout"));
+      }
     }
     catch (caught) { setError(caught instanceof Error ? caught.message : "Unable to reach the assistant"); }
     finally { setLoading(false); }
