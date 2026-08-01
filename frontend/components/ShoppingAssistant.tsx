@@ -56,6 +56,7 @@ export function ShoppingAssistant({
 
   async function ask(message: string, voiceReply = false) {
     if (!message.trim()) return;
+    setInput("");
     setLoading(true); setError("");
     try {
       const response = await sendChat(message, conversationId, token);
