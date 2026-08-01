@@ -15,13 +15,17 @@ export function ConversationHistory({
   onSelect: (id: string) => void;
   onNew: () => void;
 }) {
+  const newestFirst = [...conversations].sort(
+    (left, right) => new Date(right.updated_at).getTime() - new Date(left.updated_at).getTime(),
+  );
+
   return <Paper sx={{ p: 1.5, position: { md: "sticky" }, top: 88 }}>
     <Stack direction="row" alignItems="center" justifyContent="space-between" px={1} mb={1}>
       <Stack direction="row" spacing={1} alignItems="center"><HistoryRoundedIcon color="primary" /><Typography fontWeight={800}>History</Typography></Stack>
       <Button size="small" onClick={onNew} startIcon={<AddRoundedIcon />}>New</Button>
     </Stack>
     <List dense disablePadding>
-      {conversations.map((item) => <ListItemButton key={item.id} selected={selectedId === item.id} onClick={() => onSelect(item.id)} sx={{ borderRadius: 2 }}>
+      {newestFirst.map((item) => <ListItemButton key={item.id} selected={selectedId === item.id} onClick={() => onSelect(item.id)} sx={{ borderRadius: 2 }}>
         <ListItemText primary={item.title} secondary={new Date(item.updated_at).toLocaleDateString()} primaryTypographyProps={{ noWrap: true }} />
       </ListItemButton>)}
       {!conversations.length && <Typography color="text.secondary" variant="body2" p={1}>Your conversations will appear here.</Typography>}
