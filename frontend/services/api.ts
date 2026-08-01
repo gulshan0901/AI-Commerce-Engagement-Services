@@ -21,16 +21,23 @@ async function request<T>(path: string, init?: RequestInit, token?: string, retr
     ...init,
     headers: { "Content-Type": "application/json", "X-Guest-ID": getGuestId(), ...(token ? { Authorization: `Bearer ${token}` } : {}), ...init?.headers },
   });
-  if (response.status === 401 && token && retrySession) {
+  if (response.status === 401 && retrySession) {
     const supabase = createSupabaseClient();
     if (supabase) {
-      const { data, error } = await supabase.auth.refreshSession();
-      if (!error && data.session?.access_token) return request<T>(path, init, data.session.access_token, false);
+      let { data: sessionData } = await supabase.auth.getSession();
+      if (!sessionData.session) {
+        const { data, error } = await supabase.auth.signInAnonymously();
+        if (!error) sessionData = data;
+      } else if (token) {
+        const { data, error } = await supabase.auth.refreshSession();
+        if (!error) sessionData = data;
+      }
+      if (sessionData.session?.access_token) return request<T>(path, init, sessionData.session.access_token, false);
     }
   }
   if (!response.ok) {
     const payload = await response.json().catch(() => ({}));
-    throw new Error(response.status === 401 ? "Your session expired. Please sign in again." : payload.detail ?? "Request failed");
+    throw new Error(response.status === 401 ? "A secure visitor session could not be created. Refresh and try again." : payload.detail ?? "Request failed");
   }
   return response.json() as Promise<T>;
 }

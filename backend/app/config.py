@@ -12,6 +12,9 @@ class Settings(BaseSettings):
     supabase_url: str | None = None
     supabase_jwt_secret: str | None = None
     supabase_service_role_key: str | None = None
+    require_api_auth: bool = False
+    api_rate_limit_per_minute: int = 30
+    api_rate_limit_per_hour: int = 300
     use_supabase_persistence: bool = False
     openai_api_key: str | None = None
     openai_model: str = "gpt-5.6-sol"
@@ -28,6 +31,10 @@ class Settings(BaseSettings):
             "https://ai-comm-engagement.vercel.app",
             *(origin for origin in configured if origin),
         ]))
+
+    @property
+    def is_production(self) -> bool:
+        return self.environment.lower() == "production"
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

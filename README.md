@@ -220,6 +220,9 @@ Product embeddings are generated automatically on the first semantic-search requ
 | `SUPABASE_URL` | Full mode | Supabase project URL |
 | `SUPABASE_SERVICE_ROLE_KEY` | Full mode | Private database access key |
 | `SUPABASE_JWT_SECRET` | Legacy only | HS256 JWT verification |
+| `REQUIRE_API_AUTH` | Production | Require a verified Supabase visitor JWT on protected routes |
+| `API_RATE_LIMIT_PER_MINUTE` | No | Per-client AI request ceiling per minute |
+| `API_RATE_LIMIT_PER_HOUR` | No | Per-client AI request ceiling per hour |
 | `OPENAI_API_KEY` | AI mode | OpenAI Responses and embedding APIs |
 | `OPENAI_MODEL` | No | Chat and agent model |
 | `EMBEDDING_MODEL` | No | Vector embedding model |
@@ -262,6 +265,19 @@ pnpm build
 4. Set `NEXT_PUBLIC_API_URL` to the deployed backend URL.
 5. Set `NEXT_PUBLIC_SITE_URL` to the final Vercel or custom domain.
 
+### Protecting the public AI API
+
+The Cloud Run URL must remain reachable by the browser, but protected routes should not accept unsigned requests.
+
+1. In Supabase, enable **Authentication → Providers → Anonymous Sign-Ins**.
+2. Enable CAPTCHA for anonymous sign-ins to make automated visitor creation harder.
+3. Set Cloud Run `ENVIRONMENT=production` and `REQUIRE_API_AUTH=true`.
+4. Set `SUPABASE_URL`; for legacy HS256 projects also set `SUPABASE_JWT_SECRET`.
+5. Keep `SUPABASE_SERVICE_ROLE_KEY` only in Cloud Run secrets—never add it to Vercel or GitHub.
+6. Configure OpenAI project usage limits and billing alerts as the final cost backstop.
+
+The frontend creates an invisible anonymous Supabase session after the first protected `401`, so visitors do not see a login screen. Production mode also disables `/docs`, `/redoc`, and `/openapi.json`. Catalogue and health routes remain public; AI routes are JWT-protected and rate-limited.
+
 ### Backend on Koyeb
 
 1. Create a web service from the repository.
@@ -294,7 +310,7 @@ Use the interpreter directly without activating:
 
 ## API overview
 
-The interactive OpenAPI specification is available at `/docs` while FastAPI is running.
+The interactive OpenAPI specification is available at `/docs` in development only.
 
 Important routes include:
 

@@ -2,13 +2,15 @@
 
 import asyncio
 import json
-from time import perf_counter
+from collections import defaultdict, deque
+from time import monotonic, perf_counter
 from typing import Annotated
 
 import httpx
 
-from fastapi import Depends, FastAPI, HTTPException, Query, Response
+from fastapi import Depends, FastAPI, HTTPException, Query, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from .agents.orchestrator import Orchestrator
 from .agents.comparison_agent import ComparisonAgent
@@ -41,7 +43,13 @@ support_agent = SupportAgent()
 order_agent = OrderAgent(get_order_store())
 visual_search_agent = VisualSearchAgent()
 review_agent = ReviewAgent()
-app = FastAPI(title=settings.app_name, version="0.1.0")
+app = FastAPI(
+    title=settings.app_name,
+    version="0.1.0",
+    docs_url=None if settings.is_production else "/docs",
+    redoc_url=None if settings.is_production else "/redoc",
+    openapi_url=None if settings.is_production else "/openapi.json",
+)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.frontend_origins,
@@ -49,6 +57,32 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+AI_PATHS = {"/chat", "/api/v1/chat", "/recommend", "/search/semantic", "/search/visual"}
+rate_windows: dict[str, deque[float]] = defaultdict(deque)
+rate_lock = asyncio.Lock()
+
+
+@app.middleware("http")
+async def protect_ai_capacity(request: Request, call_next):
+    """Bound costly AI traffic per originating client before it reaches OpenAI."""
+    if (settings.is_production or settings.require_api_auth) and request.method != "OPTIONS" and request.url.path in AI_PATHS:
+        forwarded = request.headers.get("x-forwarded-for", "")
+        client_ip = forwarded.split(",", 1)[0].strip() or (request.client.host if request.client else "unknown")
+        now = monotonic()
+        async with rate_lock:
+            timestamps = rate_windows[client_ip]
+            while timestamps and timestamps[0] <= now - 3600:
+                timestamps.popleft()
+            minute_count = sum(timestamp > now - 60 for timestamp in timestamps)
+            if minute_count >= settings.api_rate_limit_per_minute or len(timestamps) >= settings.api_rate_limit_per_hour:
+                return JSONResponse(
+                    status_code=429,
+                    content={"detail": "AI request limit reached. Please try again later."},
+                    headers={"Retry-After": "60"},
+                )
+            timestamps.append(now)
+    return await call_next(request)
 
 
 @app.get("/health")
